@@ -30,6 +30,10 @@ namespace EduGestor.Models
         public Guid StudentClassId { get; set; }
         public StudentClass? StudentClass { get; set; }
 
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+        public DateTime? UpdatedAt { get; set; }
+
         public ICollection<Grade> Grades { get; set; } = new List<Grade>();
 
         public Registration()

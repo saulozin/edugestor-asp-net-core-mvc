@@ -20,7 +20,7 @@ namespace EduGestor.Services
                 .Include(r => r.Student)
                     .ThenInclude(s => s.Guardian)
                 .Include(r => r.StudentClass)
-                .OrderByDescending(r => r.Date)
+                .OrderByDescending(r => r.CreatedAt)
                 .ToListAsync();
         }
 
@@ -28,13 +28,28 @@ namespace EduGestor.Services
         {
             return await _context.Registrations
                 .Include(r => r.Student)
+                    .ThenInclude(s => s.Guardian)
                 .Include(r => r.StudentClass)
                 .FirstOrDefaultAsync(r => r.Id == id);
         }
 
         public async Task InsertAsync(Registration reg)
         {
-            _context.Registrations.Add(reg);
+            bool alreadyExists = await _context.Registrations
+                .AnyAsync(r =>
+                    r.StudentId == reg.StudentId &&
+                    r.StudentClassId == reg.StudentClassId);
+
+            if (alreadyExists)
+            {
+                throw new IntegrityException(
+                    "This student is already registered in this class.");
+            }
+
+            reg.CreatedAt = DateTime.UtcNow;
+
+            _context.Add(reg);
+
             await _context.SaveChangesAsync();
         }
 
@@ -44,11 +59,12 @@ namespace EduGestor.Services
 
             if (!exists)
             {
-                throw new NotFoundException("Teacher Id not found.");
+                throw new NotFoundException("Registration Id not found.");
             }
 
             try
             {
+                reg.UpdatedAt = DateTime.UtcNow;
                 _context.Registrations.Update(reg);
 
                 await _context.SaveChangesAsync();
@@ -67,7 +83,7 @@ namespace EduGestor.Services
 
                 if (reg == null)
                 {
-                    throw new NotFoundException("Student Id not found.");
+                    throw new NotFoundException("Registration Id not found.");
                 }
 
                 _context.Registrations.Remove(reg);

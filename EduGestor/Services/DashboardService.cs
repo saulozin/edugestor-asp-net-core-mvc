@@ -38,7 +38,7 @@ namespace EduGestor.Services
                     .Include(r => r.Student)
                         .ThenInclude(s => s.Guardian)
                     .Include(r => r.StudentClass)
-                    .OrderByDescending(r => r.Date)
+                    .OrderByDescending(r => r.CreatedAt)
                     .Take(5)
                     .ToListAsync()
             };

@@ -55,10 +55,25 @@ namespace EduGestor.Controllers
                 return View(viewModel);
             }
 
-            await _registrationService
-                .InsertAsync(viewModel.Registration);
+            try
+            {
+                await _registrationService
+                    .InsertAsync(viewModel.Registration);
 
-            return RedirectToAction(nameof(Index));
+                return RedirectToAction(nameof(Index));
+            }
+            catch (IntegrityException err)
+            {
+                ModelState.AddModelError(string.Empty, err.Message);
+
+                viewModel.Students =
+                    await _studentService.FindAllAsync();
+
+                viewModel.StudentClasses =
+                    await _studentClassService.FindAllAsync();
+
+                return View(viewModel);
+            }
         }
 
         // =========================
