@@ -1,4 +1,5 @@
 ﻿using EduGestor.Data;
+using EduGestor.Extensions;
 using EduGestor.Models;
 using EduGestor.Services.Exceptions;
 using Microsoft.EntityFrameworkCore;
@@ -8,10 +9,12 @@ namespace EduGestor.Services
     public class StudentClassService
     {
         private readonly EduGestorContext _context;
+        private readonly ValidateExtensions _validate;
 
-        public StudentClassService(EduGestorContext context)
+        public StudentClassService(EduGestorContext context, ValidateExtensions validate)
         {
             _context = context;
+            _validate = validate;
         }
 
         public async Task<List<StudentClass>> FindAllAsync()
@@ -31,30 +34,60 @@ namespace EduGestor.Services
                 .FirstOrDefaultAsync(c => c.Id == id);
         }
 
-        public async Task InsertAsync(StudentClass obj)
+        public async Task InsertAsync(StudentClass sc)
         {
-            _context.StudentClasses.Add(obj);
+            if (await _validate.ExistsAsync<StudentClass>(obj => obj.Id == sc.Id))
+            {
+                throw new IntegrityException(
+                    "This student class already exists.");
+            }
+
+            if (await _validate.ExistsAsync<StudentClass>(obj => obj.Code == sc.Code))
+            {
+                throw new IntegrityException(
+                    "This code already exists.");
+            }
+
+            sc.CreatedAt = DateTime.UtcNow;
+
+            _context.StudentClasses.Add(sc);
             await _context.SaveChangesAsync();
         }
 
         public async Task UpdateAsync(StudentClass sClass)
         {
-            bool exists = await _context.StudentClasses.AnyAsync(sc => sc.Id == sClass.Id);
+            bool exists = await _context.StudentClasses
+                .AnyAsync(sc => sc.Id == sClass.Id);
 
             if (!exists)
             {
-                throw new NotFoundException("Student Class Id not found.");
+                throw new NotFoundException(
+                    "Student Class Id not found.");
+            }
+
+            bool codeExists = await _context.StudentClasses
+                .AnyAsync(sc =>
+                    sc.Code == sClass.Code &&
+                    sc.Id != sClass.Id);
+
+            if (codeExists)
+            {
+                throw new IntegrityException(
+                    "This code already exists.");
             }
 
             try
             {
+                sClass.UpdatedAt = DateTime.UtcNow;
+
                 _context.StudentClasses.Update(sClass);
 
                 await _context.SaveChangesAsync();
             }
             catch (DbUpdateConcurrencyException err)
             {
-                throw new DbConcurrencyException(err.Message);
+                throw new DbConcurrencyException(
+                    err.Message);
             }
         }
 

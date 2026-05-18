@@ -30,6 +30,10 @@ namespace EduGestor.Models
         [Required]
         public string Address { get; set; }
 
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+        public DateTime? UpdatedAt { get; set; }
+
         public ICollection<Student> Students { get; set; } = new List<Student>();
 
         public Guardian()

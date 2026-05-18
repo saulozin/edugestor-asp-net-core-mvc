@@ -72,6 +72,7 @@ namespace EduGestor.Services
                 teacher.Cpf = original.Cpf;
 
                 teacher.UpdatedAt = DateTime.UtcNow;
+
                 _context.Teachers.Update(teacher);
 
                 await _context.SaveChangesAsync();

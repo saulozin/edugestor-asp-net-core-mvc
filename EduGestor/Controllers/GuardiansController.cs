@@ -1,6 +1,10 @@
 ﻿using EduGestor.Models;
+using EduGestor.Models.ViewModels;
 using EduGestor.Services;
+using EduGestor.Services.Exceptions;
 using Microsoft.AspNetCore.Mvc;
+using System.Diagnostics;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace EduGestor.Controllers
 {
@@ -34,7 +38,7 @@ namespace EduGestor.Controllers
 
             if (guardian == null)
             {
-                return NotFound();
+                throw new NotFoundException("Id not found.");
             }
 
             return View(guardian);
@@ -53,26 +57,29 @@ namespace EduGestor.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(Guardian guardian)
         {
+            if (guardian == null)
+            {
+                return View(guardian);
+            }
+
             if (!ModelState.IsValid)
             {
                 return View(guardian);
             }
 
-            var existing =
-                await _guardianService.FindByCpfAsync(guardian.Cpf);
-
-            if (existing != null)
+            try
+            {
+                await _guardianService.InsertAsync(guardian);
+                return RedirectToAction(nameof(Index));
+            }
+            catch (IntegrityException err)
             {
                 ModelState.AddModelError(
-                    "Cpf",
-                    "Guardian already exists.");
+                    string.Empty,
+                    err.Message);
 
                 return View(guardian);
             }
-
-            await _guardianService.InsertAsync(guardian);
-
-            return RedirectToAction(nameof(Index));
         }
 
         // =========================
@@ -86,7 +93,7 @@ namespace EduGestor.Controllers
 
             if (guardian == null)
             {
-                return NotFound();
+                throw new NotFoundException("Id not found");
             }
 
             return View(guardian);
@@ -100,7 +107,7 @@ namespace EduGestor.Controllers
         {
             if (id != guardian.Id)
             {
-                return NotFound();
+                throw new NotFoundException("Id not found");
             }
 
             if (!ModelState.IsValid)
@@ -108,9 +115,23 @@ namespace EduGestor.Controllers
                 return View(guardian);
             }
 
-            await _guardianService.UpdateAsync(guardian);
-
-            return RedirectToAction(nameof(Index));
+            try
+            {
+                await _guardianService.UpdateAsync(guardian);
+                return RedirectToAction(nameof(Index));
+            }
+            catch (NotFoundException err)
+            {
+                return RedirectToAction(
+                    nameof(Error),
+                    new { message = err.Message });
+            }
+            catch (DbConcurrencyException err)
+            {
+                return RedirectToAction(
+                    nameof(Error),
+                    new { message = err.Message });
+            }
         }
 
         // =========================
@@ -124,7 +145,7 @@ namespace EduGestor.Controllers
 
             if (guardian == null)
             {
-                return NotFound();
+                throw new NotFoundException("Id not found.");
             }
 
             return View(guardian);
@@ -135,8 +156,18 @@ namespace EduGestor.Controllers
         public async Task<IActionResult> DeleteConfirmed(Guid id)
         {
             await _guardianService.RemoveAsync(id);
-
             return RedirectToAction(nameof(Index));
+        }
+
+        public IActionResult Error(string message)
+        {
+            var viewModel = new ErrorViewModel
+            {
+                Message = message,
+                RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier
+            };
+
+            return View(viewModel);
         }
     }
 }

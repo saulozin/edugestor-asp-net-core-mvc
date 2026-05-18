@@ -1,5 +1,7 @@
 ﻿using EduGestor.Data;
+using EduGestor.Extensions;
 using EduGestor.Models;
+using EduGestor.Services.Exceptions;
 using Microsoft.EntityFrameworkCore;
 
 namespace EduGestor.Services
@@ -7,10 +9,12 @@ namespace EduGestor.Services
     public class GuardianService
     {
         private readonly EduGestorContext _context;
+        private readonly ValidateExtensions _validate;
 
-        public GuardianService(EduGestorContext context)
+        public GuardianService(EduGestorContext context, ValidateExtensions validate)
         {
             _context = context;
+            _validate = validate;
         }
 
         // =========================
@@ -38,8 +42,25 @@ namespace EduGestor.Services
                 .FirstOrDefaultAsync(g => g.Cpf == cpf);
         }
 
+        // =====================
+        // CREATE
+        // =====================
         public async Task<Guardian> InsertAsync(Guardian guardian)
         {
+            if (await _validate.ExistsAsync<Guardian>(g => g.Id == guardian.Id))
+            {
+                throw new IntegrityException(
+                    "This guardian already exists.");
+            }
+
+            if (await _validate.ExistsAsync<Guardian>(g => g.Cpf == guardian.Cpf))
+            {
+                throw new IntegrityException(
+                    "This CPF already exists.");
+            }
+
+            guardian.CreatedAt = DateTime.UtcNow;
+
             _context.Guardians.Add(guardian);
 
             await _context.SaveChangesAsync();
@@ -47,6 +68,9 @@ namespace EduGestor.Services
             return guardian;
         }
 
+        // =====================
+        // UPDATE
+        // =====================
         public async Task UpdateAsync(Guardian guardian)
         {
             bool exists = await _context.Guardians
@@ -59,6 +83,14 @@ namespace EduGestor.Services
 
             try
             {
+                var original = await _context.Guardians
+                    .AsNoTracking()
+                    .FirstOrDefaultAsync(g => g.Id == guardian.Id);
+
+                guardian.Cpf = original.Cpf;
+
+                guardian.UpdatedAt = DateTime.UtcNow;
+
                 _context.Update(guardian);
 
                 await _context.SaveChangesAsync();
@@ -69,6 +101,9 @@ namespace EduGestor.Services
             }
         }
 
+        // =====================
+        // DELETE
+        // =====================
         public async Task RemoveAsync(Guid id)
         {
             try

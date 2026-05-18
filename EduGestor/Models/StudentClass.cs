@@ -28,6 +28,9 @@ namespace EduGestor.Models
         [Display(Name = "Class Code")]
         public string Code { get; set; }
 
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public DateTime? UpdatedAt { get; set; }
+
         public ICollection<Registration> Registrations { get; set; } = new List<Registration>();
         public ICollection<DisciplineClass> DisciplineClasses { get; set; } = new List<DisciplineClass>();
 

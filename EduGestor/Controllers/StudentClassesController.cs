@@ -1,7 +1,9 @@
 ﻿using EduGestor.Models;
+using EduGestor.Models.ViewModels;
 using EduGestor.Services;
 using EduGestor.Services.Exceptions;
 using Microsoft.AspNetCore.Mvc;
+using System.Diagnostics;
 
 namespace EduGestor.Controllers
 {
@@ -32,14 +34,29 @@ namespace EduGestor.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(StudentClass obj)
         {
+            if (obj == null)
+            {
+                return View(obj);
+            }
+
             if (!ModelState.IsValid)
             {
                 return View(obj);
             }
 
-            await _studentClassService.InsertAsync(obj);
+            try
+            {
+                await _studentClassService.InsertAsync(obj);
+                return RedirectToAction(nameof(Index));
+            }
+            catch (IntegrityException err)
+            {
+                ModelState.AddModelError(
+                    string.Empty,
+                    err.Message);
 
-            return RedirectToAction(nameof(Index));
+                return View(obj);
+            }
         }
 
         // =========================
@@ -71,8 +88,29 @@ namespace EduGestor.Controllers
                 return View(sClass);
             }
 
-            await _studentClassService.UpdateAsync(sClass);
-            return RedirectToAction(nameof(Index));
+            try
+            {
+                await _studentClassService.UpdateAsync(sClass);
+                return RedirectToAction(nameof(Index));
+            }
+            catch (NotFoundException err)
+            {
+                return RedirectToAction(
+                    nameof(Error),
+                    new { message = err.Message });
+            }
+            catch (DbConcurrencyException err)
+            {
+                return RedirectToAction(
+                    nameof(Error),
+                    new { message = err.Message });
+            }
+            catch (IntegrityException err)
+            {
+                ModelState.AddModelError(string.Empty, err.Message);
+
+                return View(sClass);
+            }
         }
 
         // =========================
@@ -112,6 +150,17 @@ namespace EduGestor.Controllers
             await _studentClassService.RemoveAsync(id);
 
             return RedirectToAction(nameof(Index));
+        }
+
+        public IActionResult Error(string message)
+        {
+            var viewModel = new ErrorViewModel
+            {
+                Message = message,
+                RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier
+            };
+
+            return View(viewModel);
         }
     }
 }
