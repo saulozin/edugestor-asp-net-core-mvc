@@ -1,8 +1,12 @@
 ﻿using EduGestor.Models;
+using EduGestor.Models.ViewModels;
 using EduGestor.Services;
+using EduGestor.Services.Exceptions;
 using EduGestor.ViewModels;
 using Microsoft.AspNetCore.Mvc;
-using EduGestor.Services.Exceptions;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using System.Diagnostics;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace EduGestor.Controllers
 {
@@ -38,9 +42,24 @@ namespace EduGestor.Controllers
                 return View(teacher);
             }
 
-            await _teacherService.InsertAsync(teacher);
+            if (teacher == null)
+            {
+                return View(teacher);
+            }
 
-            return RedirectToAction(nameof(Index));
+            try
+            {
+                await _teacherService.InsertAsync(teacher);
+                return RedirectToAction(nameof(Index));
+            }
+            catch (IntegrityException err)
+            {
+                ModelState.AddModelError(
+                    string.Empty,
+                    err.Message);
+
+                return View(teacher);
+            }
         }
 
         // =========================
@@ -87,8 +106,23 @@ namespace EduGestor.Controllers
                 return View(teacher);
             }
 
-            await _teacherService.UpdateAsync(teacher);
-            return RedirectToAction(nameof(Index));
+            try
+            {
+                await _teacherService.UpdateAsync(teacher);
+                return RedirectToAction(nameof(Index));
+            }
+            catch (NotFoundException err)
+            {
+                return RedirectToAction(
+                    nameof(Error),
+                    new { message = err.Message });
+            }
+            catch (DbConcurrencyException err)
+            {
+                return RedirectToAction(
+                    nameof(Error),
+                    new { message = err.Message });
+            }
         }
 
         // =========================
@@ -113,6 +147,17 @@ namespace EduGestor.Controllers
             await _teacherService.RemoveAsync(id);
 
             return RedirectToAction(nameof(Index));
+        }
+
+        public IActionResult Error(string message)
+        {
+            var viewModel = new ErrorViewModel
+            {
+                Message = message,
+                RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier
+            };
+
+            return View(viewModel);
         }
     }
 }

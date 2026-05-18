@@ -147,7 +147,6 @@ namespace EduGestor.Controllers
             try
             {
                 await _studentService.InsertAsync(vm.Student);
-
                 return RedirectToAction(nameof(Index));
             }
             catch (IntegrityException err)
@@ -265,7 +264,6 @@ namespace EduGestor.Controllers
             try
             {
                 await _studentService.UpdateAsync(student);
-
                 return RedirectToAction(nameof(Index));
             }
             catch (NotFoundException err)

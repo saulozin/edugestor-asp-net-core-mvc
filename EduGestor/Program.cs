@@ -1,4 +1,5 @@
 using EduGestor.Data;
+using EduGestor.Extensions;
 using EduGestor.Services;
 using Microsoft.EntityFrameworkCore;
 
@@ -15,6 +16,7 @@ builder.Services.AddScoped<DashboardService>();
 builder.Services.AddScoped<TeacherService>();
 builder.Services.AddScoped<StudentClassService>();
 builder.Services.AddScoped<RegistrationService>();
+builder.Services.AddScoped<ValidateExtensions>();
 
 var app = builder.Build();
 

@@ -1,4 +1,5 @@
 ﻿using EduGestor.Data;
+using EduGestor.Extensions;
 using EduGestor.Models;
 using EduGestor.Services.Exceptions;
 using Microsoft.EntityFrameworkCore;
@@ -8,10 +9,12 @@ namespace EduGestor.Services
     public class StudentService
     {
         private readonly EduGestorContext _context;
+        private readonly ValidateExtensions _validate;
 
-        public StudentService(EduGestorContext context)
+        public StudentService(EduGestorContext context, ValidateExtensions validate)
         {
             _context = context;
+            _validate = validate;
         }
 
         // =========================
@@ -55,13 +58,13 @@ namespace EduGestor.Services
         // =========================
         public async Task InsertAsync(Student student)
         {
-            if (await StudentExists(student.Id))
+            if (await _validate.ExistsAsync<Student>(s => s.Id == student.Id))
             {
                 throw new IntegrityException(
                     "This student already exists.");
             }
 
-            if (await CpfExists(student.Cpf))
+            if (await _validate.ExistsAsync<Student>(s => s.Cpf == student.Cpf))
             {
                 throw new IntegrityException(
                     "This CPF already exists.");
@@ -72,18 +75,6 @@ namespace EduGestor.Services
             _context.Students.Add(student);
 
             await _context.SaveChangesAsync();
-        }
-
-        private async Task<bool> StudentExists(Guid id)
-        {
-            return await _context.Students
-                .AnyAsync(s => s.Id == id);
-        }
-
-        private async Task<bool> CpfExists(string cpf)
-        {
-            return await _context.Students
-                .AnyAsync(s => s.Cpf == cpf);
         }
 
         // =========================
@@ -108,7 +99,14 @@ namespace EduGestor.Services
 
             try
             {
+                var original = await _context.Students
+                    .AsNoTracking()
+                    .FirstOrDefaultAsync(s => s.Id == student.Id);
+
+                student.Cpf = original.Cpf;
+
                 student.UpdatedAt = DateTime.UtcNow;
+
                 _context.Students.Update(student);
 
                 await _context.SaveChangesAsync();
