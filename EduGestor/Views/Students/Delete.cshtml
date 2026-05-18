@@ -1,0 +1,156 @@
+@model EduGestor.Models.Student
+@using EduGestor.Extensions
+
+@{
+    ViewData["Title"] = "Delete Student";
+}
+
+<h2 class="text-danger">@ViewData["Title"]</h2>
+
+<div class="alert alert-warning">
+    <strong>Warning!</strong>
+    This action cannot be undone.
+</div>
+
+<div class="card shadow-sm">
+
+    <div class="card-body">
+
+        <div class="d-flex align-items-center mb-4">
+
+            @if (!string.IsNullOrEmpty(Model.FotoUrl))
+            {
+                <img src="@Model.FotoUrl"
+                     alt="Student Photo"
+                     class="rounded-circle border"
+                     style="width:120px; height:120px; object-fit:cover;" />
+            }
+            else
+            {
+                <div class="rounded-circle bg-secondary text-white d-flex justify-content-center align-items-center"
+                     style="width:120px; height:120px; font-size:48px;">
+                    👤
+                </div>
+            }
+
+            <div class="ms-4">
+                <h3>@Model.Name</h3>
+
+                <p class="mb-1">
+                    <strong>CPF:</strong> @Model.Cpf.ToCpf()
+                </p>
+
+                <p class="mb-1">
+                    <strong>RG:</strong> @Model.Rg.ToRg()
+                </p>
+
+                <p class="mb-1">
+                    <strong>Birth Date:</strong>
+                    @Model.BirthDate.ToString("dd/MM/yyyy")
+                </p>
+            </div>
+
+        </div>
+
+        <hr />
+
+        <h5>Guardian</h5>
+
+        @if (Model.Guardian != null)
+        {
+            <table class="table table-bordered">
+
+                <tr>
+                    <th>Name</th>
+                    <td>@Model.Guardian.Name</td>
+                </tr>
+
+                <tr>
+                    <th>CPF</th>
+                    <td>@Model.Guardian.Cpf</td>
+                </tr>
+
+                <tr>
+                    <th>Email</th>
+                    <td>@Model.Guardian.Email</td>
+                </tr>
+
+                <tr>
+                    <th>Phone</th>
+                    <td>@Model.Guardian.Phone</td>
+                </tr>
+
+            </table>
+        }
+        else
+        {
+            <p class="text-muted">
+                No guardian linked.
+            </p>
+        }
+
+        <hr />
+
+        <div class="row">
+
+            <div class="col-md-6">
+
+                <div class="card border-primary mb-3">
+                    <div class="card-body">
+
+                        <h5 class="card-title">
+                            Registrations
+                        </h5>
+
+                        <h2>
+                            @Model.Registrations.Count
+                        </h2>
+
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="col-md-6">
+
+                <div class="card border-success mb-3">
+                    <div class="card-body">
+
+                        <h5 class="card-title">
+                            Grades
+                        </h5>
+
+                        <h2>
+                            @(Model.Registrations
+                                .SelectMany(r => r.Grades)
+                                .Count())
+                        </h2>
+
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+        <form asp-action="Delete">
+
+            <input type="hidden" asp-for="Id" />
+
+            <button type="submit"
+                    class="btn btn-danger">
+
+                Delete Student
+            </button>
+
+            <a asp-action="Index"
+               class="btn btn-secondary">
+
+                Back to List
+            </a>
+
+        </form>
+
+    </div>
+
+</div>

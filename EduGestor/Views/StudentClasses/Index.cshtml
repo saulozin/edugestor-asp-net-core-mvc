@@ -1,0 +1,115 @@
+﻿@model IEnumerable<EduGestor.Models.StudentClass>
+
+@{
+    ViewData["Title"] = "Students Classes";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+
+    <div>
+        <h2 class="fw-bold mb-1">
+            Students Classes
+        </h2>
+    </div>
+
+    <a asp-action="Create"
+       class="btn btn-primary shadow-sm">
+
+        <i class="bi bi-plus-circle"></i>
+        New Student Class
+
+    </a>
+
+</div>
+
+<div class="card border-0 shadow-sm rounded-4">
+
+    <div class="card-body">
+
+        <table class="table align-middle table-hover">
+
+            <thead class="table-light">
+
+                <tr>
+                    <th>@Html.DisplayNameFor(Model => Model.Level)</th>
+                    <th>@Html.DisplayNameFor(Model => Model.Series)</th>
+                    <th>@Html.DisplayNameFor(Model => Model.Shift)</th>
+                    <th>@Html.DisplayNameFor(Model => Model.Capacity)</th>
+                    <th>@Html.DisplayNameFor(Model => Model.Code)</th>
+                    <th width="180"></th>
+                </tr>
+
+            </thead>
+
+            <tbody>
+
+                @foreach (var sc in Model)
+                {
+                    <tr>
+
+                        <td>
+                            <strong>
+                                @sc.Level
+                            </strong>
+                        </td>
+
+                        <td>
+                            <strong>
+                                @sc.Series
+                            </strong>
+                        </td>
+
+                        <td>
+                            @sc.Shift
+                        </td>
+
+                        <td>
+                            @sc.Capacity
+                        </td>
+
+                        <td>
+                            @sc.Code
+                        </td>
+
+                        <td>
+
+                            <div class="d-flex gap-2">
+
+                                <a asp-action="Details"
+                                   asp-route-id="@sc.Id"
+                                   class="btn btn-sm btn-info text-white">
+
+                                    <i class="bi bi-eye"></i>
+
+                                </a>
+
+                                <a asp-action="Edit"
+                                   asp-route-id="@sc.Id"
+                                   class="btn btn-sm btn-warning">
+
+                                    <i class="bi bi-pencil"></i>
+
+                                </a>
+
+                                <a asp-action="Delete"
+                                   asp-route-id="@sc.Id"
+                                   class="btn btn-sm btn-danger">
+
+                                    <i class="bi bi-trash"></i>
+
+                                </a>
+
+                            </div>
+
+                        </td>
+
+                    </tr>
+                }
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>

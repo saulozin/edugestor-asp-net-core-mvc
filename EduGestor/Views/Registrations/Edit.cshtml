@@ -1,0 +1,100 @@
+﻿@model EduGestor.Models.ViewModels.RegistrationFormViewModel
+@using EduGestor.Models.Enums
+
+@{
+    ViewData["Title"] = "Edit Registration";
+}
+
+<h3 class="fw-bold mb-4">@ViewData["Title"]</h3>
+
+<div class="card border-0 shadow-sm rounded-4">
+    <div class="card-body">
+        <form asp-action="Edit">
+            <input type="hidden" asp-for="Registration.Id" />
+            <div asp-validation-summary="ModelOnly"
+                 class="text-danger">
+            </div>
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label asp-for="Registration.Date"
+                           class="form-label">
+                    </label>
+                    <input asp-for="Registration.Date"
+                           class="form-control" />
+                    <span asp-validation-for="Registration.Date"
+                          class="text-danger">
+                    </span>
+                </div>
+
+                <div class="form-group mb-3">
+                    <label asp-for="Registration.Status"
+                           class="control-label">
+                    </label>
+
+                    <select asp-for="Registration.Status"
+                            asp-items="Html.GetEnumSelectList<RegistrationStatus>()"
+                            class="form-control">
+                    </select>
+
+                    <span asp-validation-for="Registration.Status"
+                          class="text-danger">
+                    </span>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="form-group mb-3">
+                    <label class="control-label">
+                        Student
+                    </label>
+                    <select asp-for="Registration.StudentId"
+                            asp-items="@(new SelectList(Model.Students, "Id", "Name"))"
+                            class="form-select">
+
+                        <option value="">
+                            No Student
+                        </option>
+                    </select>
+                </div>
+
+                <div class="form-group mb-3">
+                    <label class="control-label">
+                        Student Class
+                    </label>
+
+                    <select asp-for="Registration.StudentClassId"
+                            asp-items="@(new SelectList(Model.StudentClasses, "Id", "Code"))"
+                            class="form-select">
+
+                        <option value="">
+                            Select a class
+                        </option>
+
+                    </select>
+
+                    <span asp-validation-for="Registration.StudentClassId"
+                          class="text-danger">
+                    </span>
+                </div>
+            </div>
+
+            <div class="d-flex gap-2">
+                <button type="submit"
+                        class="btn btn-primary">
+                    Save
+                </button>
+
+                <a asp-action="Index"
+                   class="btn btn-secondary">
+                    Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}
