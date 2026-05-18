@@ -16,6 +16,7 @@ builder.Services.AddScoped<DashboardService>();
 builder.Services.AddScoped<TeacherService>();
 builder.Services.AddScoped<StudentClassService>();
 builder.Services.AddScoped<RegistrationService>();
+builder.Services.AddScoped<DisciplineService>();
 builder.Services.AddScoped<ValidateExtensions>();
 
 var app = builder.Build();

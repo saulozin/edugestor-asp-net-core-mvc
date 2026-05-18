@@ -48,7 +48,7 @@ namespace EduGestor.Services
 
             reg.CreatedAt = DateTime.UtcNow;
 
-            _context.Add(reg);
+            _context.Registrations.Add(reg);
 
             await _context.SaveChangesAsync();
         }

@@ -19,6 +19,9 @@ namespace EduGestor.Models
         [Required]
         public int Workload { get; set; }  //Carga Horária
 
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public DateTime? UpdatedAt { get; set; }
+
         public ICollection<DisciplineClass> DisciplineClasses { get; set; } = new List<DisciplineClass>();
         public ICollection<Grade> Grades { get; set; } = new List<Grade>();
 

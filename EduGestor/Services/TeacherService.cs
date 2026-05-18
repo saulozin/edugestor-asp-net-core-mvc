@@ -94,7 +94,7 @@ namespace EduGestor.Services
 
                 if (teacher == null)
                 {
-                    throw new NotFoundException("Student Id not found.");
+                    throw new NotFoundException("Teacher Id not found.");
                 }
 
                 _context.Teachers.Remove(teacher);

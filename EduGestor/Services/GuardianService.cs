@@ -91,7 +91,7 @@ namespace EduGestor.Services
 
                 guardian.UpdatedAt = DateTime.UtcNow;
 
-                _context.Update(guardian);
+                _context.Guardians.Update(guardian);
 
                 await _context.SaveChangesAsync();
             }

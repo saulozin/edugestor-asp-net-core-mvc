@@ -25,6 +25,9 @@ namespace EduGestor.Models
         [Required(ErrorMessage = "{0} required")]
         public int SchoolYear { get; set; }     // Ano escolar
 
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public DateTime? UpdatedAt { get; set; }
+
         // Matrícula do aluno
         public Guid? RegistrationId { get; set; }
         public Registration? Registration { get; set; }
