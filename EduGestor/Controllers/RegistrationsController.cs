@@ -122,9 +122,7 @@ namespace EduGestor.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(
-            Guid id,
-            RegistrationFormViewModel viewModel)
+        public async Task<IActionResult> Edit(Guid id, RegistrationFormViewModel viewModel)
         {
             if (id != viewModel.Registration?.Id)
             {

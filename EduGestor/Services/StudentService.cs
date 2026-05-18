@@ -15,7 +15,7 @@ namespace EduGestor.Services
         }
 
         // =========================
-        // STUDENTS
+        // STUDENTS LIST
         // =========================
 
         public async Task<List<Student>> FindAllAsync()
@@ -31,7 +31,9 @@ namespace EduGestor.Services
             return await _context.Students
                 .Include(s => s.Guardian)
                 .Include(s => s.Registrations)
-                .Include(s => s.Grades)
+                    .ThenInclude(r => r.StudentClass)
+                .Include(s => s.Registrations)
+                    .ThenInclude(r => r.Grades)
                 .OrderBy(s => s.Name)
                 .ToListAsync();
         }
@@ -48,12 +50,45 @@ namespace EduGestor.Services
                 .FirstOrDefaultAsync(s => s.Id == id);
         }
 
+        // =========================
+        // STUDENTS CREATE
+        // =========================
         public async Task InsertAsync(Student student)
         {
+            if (await StudentExists(student.Id))
+            {
+                throw new IntegrityException(
+                    "This student already exists.");
+            }
+
+            if (await CpfExists(student.Cpf))
+            {
+                throw new IntegrityException(
+                    "This CPF already exists.");
+            }
+
+            student.CreatedAt = DateTime.UtcNow;
+
             _context.Students.Add(student);
 
             await _context.SaveChangesAsync();
         }
+
+        private async Task<bool> StudentExists(Guid id)
+        {
+            return await _context.Students
+                .AnyAsync(s => s.Id == id);
+        }
+
+        private async Task<bool> CpfExists(string cpf)
+        {
+            return await _context.Students
+                .AnyAsync(s => s.Cpf == cpf);
+        }
+
+        // =========================
+        // STUDENTS EDIT
+        // =========================
 
         public async Task<Student?> FindByIdForUpdateAsync(Guid id)
         {
@@ -73,6 +108,7 @@ namespace EduGestor.Services
 
             try
             {
+                student.UpdatedAt = DateTime.UtcNow;
                 _context.Students.Update(student);
 
                 await _context.SaveChangesAsync();

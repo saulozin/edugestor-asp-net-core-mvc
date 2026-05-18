@@ -36,6 +36,10 @@ namespace EduGestor.Models
         public Guid? GuardianId { get; set; }
         public Guardian? Guardian { get; set; }
 
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+        public DateTime? UpdatedAt { get; set; }
+
         public ICollection<Registration> Registrations { get; set; } = new List<Registration>();
         public ICollection<Grade> Grades { get; set; } = new List<Grade>();
 

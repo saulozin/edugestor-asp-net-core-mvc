@@ -1,9 +1,11 @@
 using EduGestor.Models;
+using EduGestor.Models.ViewModels;
 using EduGestor.Services;
+using EduGestor.Services.Exceptions;
 using EduGestor.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using EduGestor.Services.Exceptions;
+using System.Diagnostics;
 
 namespace EduGestor.Controllers
 {
@@ -81,6 +83,11 @@ namespace EduGestor.Controllers
                 return View(vm);
             }
 
+            if (vm.Student == null)
+            {
+                return View(vm);
+            }
+
             // FOTO
             if (photo != null && photo.Length > 0)
             {
@@ -109,7 +116,7 @@ namespace EduGestor.Controllers
                     "/uploads/students/" + fileName;
             }
 
-            // guardian novo
+            // GUARDIAN
             if (vm.CreateNewGuardian)
             {
                 var existingGuardian =
@@ -118,7 +125,8 @@ namespace EduGestor.Controllers
 
                 if (existingGuardian != null)
                 {
-                    vm.Student.GuardianId = existingGuardian.Id;
+                    vm.Student.GuardianId =
+                        existingGuardian.Id;
                 }
                 else
                 {
@@ -126,7 +134,8 @@ namespace EduGestor.Controllers
                         await _guardianService
                             .InsertAsync(vm.NewGuardian);
 
-                    vm.Student.GuardianId = guardian.Id;
+                    vm.Student.GuardianId =
+                        guardian.Id;
                 }
             }
             else
@@ -135,9 +144,28 @@ namespace EduGestor.Controllers
                     vm.SelectedGuardianId;
             }
 
-            await _studentService.InsertAsync(vm.Student);
+            try
+            {
+                await _studentService.InsertAsync(vm.Student);
 
-            return RedirectToAction(nameof(Index));
+                return RedirectToAction(nameof(Index));
+            }
+            catch (IntegrityException err)
+            {
+                ModelState.AddModelError(
+                    string.Empty,
+                    err.Message);
+
+                vm.Guardians =
+                    (await _guardianService.FindAllAsync())
+                    .Select(g => new SelectListItem
+                    {
+                        Value = g.Id.ToString(),
+                        Text = $"{g.Name} ({g.Email})"
+                    }).ToList();
+
+                return View(vm);
+            }
         }
 
         // =========================
@@ -174,7 +202,7 @@ namespace EduGestor.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(Guid id, StudentFormViewModel vm, IFormFile? photo)
         {
-            if (id != vm.Student.Id)
+            if (id != vm.Student?.Id)
             {
                 throw new NotFoundException("Id not found.");
             }
@@ -197,7 +225,7 @@ namespace EduGestor.Controllers
 
             if (student == null)
             {
-                return NotFound();
+                throw new NotFoundException("Student Id not found.");
             }
 
             student.Name = vm.Student.Name;
@@ -234,9 +262,24 @@ namespace EduGestor.Controllers
                     "/uploads/students/" + fileName;
             }
 
-            await _studentService.UpdateAsync(student);
+            try
+            {
+                await _studentService.UpdateAsync(student);
 
-            return RedirectToAction(nameof(Index));
+                return RedirectToAction(nameof(Index));
+            }
+            catch (NotFoundException err)
+            {
+                return RedirectToAction(
+                    nameof(Error),
+                    new { message = err.Message });
+            }
+            catch (DbConcurrencyException err)
+            {
+                return RedirectToAction(
+                    nameof(Error),
+                    new { message = err.Message });
+            }
         }
 
         // =========================
@@ -259,9 +302,27 @@ namespace EduGestor.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(Guid id)
         {
-            await _studentService.RemoveAsync(id);
+            try
+            {
+                await _studentService.RemoveAsync(id);
 
-            return RedirectToAction(nameof(Index));
+                return RedirectToAction(nameof(Index));
+            }
+            catch (IntegrityException err)
+            {
+                return RedirectToAction(nameof(Error), new { message = err.Message });
+            }
+        }
+
+        public IActionResult Error(string message)
+        {
+            var viewModel = new ErrorViewModel
+            {
+                Message = message,
+                RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier
+            };
+
+            return View(viewModel);
         }
     }
 }
