@@ -85,6 +85,18 @@ namespace EduGestor.Services
         // ========================
         public async Task InsertAsync(Grade grade)
         {
+            bool alreadyExists = await _context.Grades
+                .AnyAsync(g =>
+                    g.RegistrationId == grade.RegistrationId &&
+                    g.DisciplineClassId == grade.DisciplineClassId &&
+                    g.Bimester == grade.Bimester);
+
+            if (alreadyExists)
+            {
+                throw new IntegrityException(
+                    "A grade already exists for this bimester and discipline.");
+            }
+
             await ValidateGradeRules(grade);
 
             grade.CreatedAt = DateTime.UtcNow;
@@ -105,6 +117,19 @@ namespace EduGestor.Services
             {
                 throw new NotFoundException(
                     "Grade Id not found.");
+            }
+
+            bool duplicated = await _context.Grades
+                .AnyAsync(g =>
+                    g.Id != grade.Id &&
+                    g.RegistrationId == grade.RegistrationId &&
+                    g.DisciplineClassId == grade.DisciplineClassId &&
+                    g.Bimester == grade.Bimester);
+
+            if (duplicated)
+            {
+                throw new IntegrityException(
+                    "A grade already exists for this bimester and discipline.");
             }
 
             await ValidateGradeRules(grade);

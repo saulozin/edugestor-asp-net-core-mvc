@@ -49,5 +49,60 @@ namespace EduGestor.Models
         {
             Grades.Remove(grade);
         }
+
+        public decimal GetAverage()
+        {
+            if (Grades == null || !Grades.Any())
+            {
+                return 0;
+            }
+
+            return Grades.Average(g => g.StudentGrade);
+        }
+
+        public decimal GetDisciplineAverage(Guid disciplineClassId)
+        {
+            var grades = Grades
+                .Where(g => g.DisciplineClassId == disciplineClassId)
+                .ToList();
+
+            if (!grades.Any())
+            {
+                return 0;
+            }
+
+            return grades.Average(g => g.StudentGrade);
+        }
+
+        public decimal GetAttendance(Guid disciplineClassId)
+        {
+            var grades = Grades
+                .Where(g => g.DisciplineClassId == disciplineClassId)
+                .ToList();
+
+            if (!grades.Any())
+            {
+                return 0;
+            }
+
+            return grades.Average(g => g.Frequency);
+        }
+
+        public bool IsApproved(Guid disciplineClassId)
+        {
+            var average = GetDisciplineAverage(disciplineClassId);
+
+            var attendance = GetAttendance(disciplineClassId);
+
+            return average >= 6.0m && attendance >= 75.0m;
+        }
+
+        public string GetStatus(Guid disciplineClassId)
+        {
+            return IsApproved(disciplineClassId)
+                ? "Approved"
+                : "Failed";
+        }
+
     }
 }

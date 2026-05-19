@@ -27,9 +27,18 @@ namespace EduGestor.Services
         public async Task<Registration?> FindByIdAsync(Guid id)
         {
             return await _context.Registrations
+
                 .Include(r => r.Student)
-                    .ThenInclude(s => s.Guardian)
                 .Include(r => r.StudentClass)
+
+                .Include(r => r.Grades)
+                    .ThenInclude(g => g.DisciplineClass)
+                        .ThenInclude(dc => dc.Discipline)
+
+                .Include(r => r.Grades)
+                    .ThenInclude(g => g.DisciplineClass)
+                        .ThenInclude(dc => dc.Teacher)
+
                 .FirstOrDefaultAsync(r => r.Id == id);
         }
 
