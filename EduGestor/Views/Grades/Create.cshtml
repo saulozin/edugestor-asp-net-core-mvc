@@ -1,0 +1,164 @@
+﻿@model EduGestor.Models.ViewModels.GradeFormViewModel
+
+@{
+    ViewData["Title"] = "Create Grade";
+}
+
+<div class="container">
+
+    <div class="card shadow-sm border-0 rounded-4">
+
+        <div class="card-header bg-white border-0 pt-4">
+            <h3 class="fw-bold">
+                Create Grade
+            </h3>
+        </div>
+
+        <div class="card-body">
+
+            <form asp-action="Create">
+
+                <div asp-validation-summary="ModelOnly"
+                     class="text-danger mb-3">
+                </div>
+
+                <!-- REGISTRATION -->
+                <div class="mb-3">
+
+                    <label asp-for="Grade.RegistrationId"
+                           class="form-label fw-semibold">
+                    </label>
+
+                    <select asp-for="Grade.RegistrationId"
+                            asp-items="Model.Registrations"
+                            class="form-select">
+
+                        <option value="">
+                            Select student registration
+                        </option>
+
+                    </select>
+
+                    <span asp-validation-for="Grade.RegistrationId"
+                          class="text-danger">
+                    </span>
+
+                </div>
+
+                <!-- DISCIPLINE CLASS -->
+                <div class="mb-3">
+
+                    <label asp-for="Grade.DisciplineClassId"
+                           class="form-label fw-semibold">
+                        Discipline
+                    </label>
+
+                    <select asp-for="Grade.DisciplineClassId"
+                            asp-items="Model.DisciplineClasses"
+                            class="form-select">
+
+                        <option value="">
+                            Select discipline
+                        </option>
+
+                    </select>
+
+                    <span asp-validation-for="Grade.DisciplineClassId"
+                          class="text-danger">
+                    </span>
+
+                </div>
+
+                <!-- GRADE -->
+                <div class="mb-3">
+
+                    <label asp-for="Grade.StudentGrade"
+                           class="form-label fw-semibold">
+                    </label>
+
+                    <input asp-for="Grade.StudentGrade"
+                           type="number"
+                           step="0.01"
+                           min="0"
+                           max="10"
+                           class="form-control" />
+
+                    <span asp-validation-for="Grade.StudentGrade"
+                          class="text-danger">
+                    </span>
+
+                </div>
+
+                <!-- FREQUENCY -->
+                <div class="mb-3">
+                    <label asp-for="Grade.Frequency"
+                           class="form-label fw-semibold">
+                    </label>
+
+                    <input asp-for="Grade.Frequency"
+                           type="number"
+                           step="0.1"
+                           min="0"
+                           max="100"
+                           class="form-control" />
+
+                    <span asp-validation-for="Grade.Frequency"
+                          class="text-danger">
+                    </span>
+                </div>
+
+                <!-- BIMESTER -->
+                <div class="mb-3">
+
+                    <label asp-for="Grade.Bimester"
+                           class="form-label fw-semibold">
+                    </label>
+
+                    <input asp-for="Grade.Bimester"
+                           class="form-control" />
+
+                    <span asp-validation-for="Grade.Bimester"
+                          class="text-danger">
+                    </span>
+
+                </div>
+
+                <!-- SCHOOL YEAR -->
+                <div class="mb-4">
+
+                    <label asp-for="Grade.SchoolYear"
+                           class="form-label fw-semibold">
+                    </label>
+
+                    <input asp-for="Grade.SchoolYear"
+                           class="form-control" />
+
+                    <span asp-validation-for="Grade.SchoolYear"
+                          class="text-danger">
+                    </span>
+
+                </div>
+
+                <button type="submit"
+                        class="btn btn-primary rounded-3">
+                    Create
+                </button>
+
+                <a asp-action="Index"
+                   class="btn btn-secondary rounded-3">
+                    Back
+                </a>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

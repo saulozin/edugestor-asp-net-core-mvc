@@ -1,0 +1,90 @@
+﻿@model EduGestor.Models.DisciplineClass
+
+@{
+    ViewData["Title"] = "Assignment Details";
+}
+
+<div class="row justify-content-center">
+
+    <div class="col-lg-6">
+
+        <div class="card border-0 shadow-sm rounded-4">
+
+            <div class="card-body p-4">
+
+                <div class="d-flex justify-content-between align-items-center mb-4">
+
+                    <h3 class="fw-bold mb-0">
+                        Assignment Details
+                    </h3>
+
+                    <span class="badge bg-dark">
+                        Academic
+                    </span>
+
+                </div>
+
+                <dl class="row">
+
+                    <dt class="col-sm-4">
+                        Class
+                    </dt>
+
+                    <dd class="col-sm-8">
+                        @Model.StudentClass?.Code
+                    </dd>
+
+                    <dt class="col-sm-4">
+                        Discipline
+                    </dt>
+
+                    <dd class="col-sm-8">
+                        @Model.Discipline?.Name
+                    </dd>
+
+                    <dt class="col-sm-4">
+                        Teacher
+                    </dt>
+
+                    <dd class="col-sm-8">
+                        @Model.Teacher?.Name
+                    </dd>
+
+                    <dt class="col-sm-4">
+                        Grades Linked
+                    </dt>
+
+                    <dd class="col-sm-8">
+                        @Model.Grades.Count()
+                    </dd>
+
+                </dl>
+
+                <div class="d-flex gap-2 mt-4">
+
+                    <a asp-action="Edit"
+                       asp-route-id="@Model.Id"
+                       class="btn btn-warning rounded-3">
+
+                        <i class="bi bi-pencil-fill"></i>
+                        Edit
+
+                    </a>
+
+                    <a asp-action="Index"
+                       class="btn btn-secondary rounded-3">
+
+                        Back
+
+                    </a>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+

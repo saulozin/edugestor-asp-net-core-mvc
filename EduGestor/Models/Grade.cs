@@ -12,11 +12,11 @@ namespace EduGestor.Models
 
         [Required(ErrorMessage = "{0} required")]
         [Range(0.0, 10.0, ErrorMessage = "{0} must be from {1} to {2}")]
-        public float StudentGrade { get; set; }   // Nota do estudante
+        public decimal StudentGrade { get; set; }   // Nota do estudante
 
         [Required(ErrorMessage = "{0} required")]
         [Range(0.0, 100.0, ErrorMessage = "{0} must be from {1} to {2}")]
-        public float Frequency { get; set; }   // Frequencia
+        public decimal Frequency { get; set; }   // Frequencia
 
         [Required(ErrorMessage = "{0} required")]
         [Range(1, 4, ErrorMessage = "{0} must be from {1} to {2}")]
@@ -29,6 +29,7 @@ namespace EduGestor.Models
         public DateTime? UpdatedAt { get; set; }
 
         // Matrícula do aluno
+        [Display(Name = "Registration")]
         public Guid? RegistrationId { get; set; }
         public Registration? Registration { get; set; }
 

@@ -1,0 +1,113 @@
+@model EduGestor.Models.Grade
+
+@{
+    ViewData["Title"] = "Grade Details";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="fw-bold mb-1">
+            Grade Details
+        </h2>
+
+        <p class="text-muted mb-0">
+            Detailed student grade information
+        </p>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm rounded-4">
+
+    <div class="card-body p-4">
+
+        <dl class="row">
+
+            <dt class="col-sm-3">
+                Student
+            </dt>
+
+            <dd class="col-sm-9">
+                @Model.Registration?.Student?.Name
+            </dd>
+
+            <dt class="col-sm-3">
+                Class
+            </dt>
+
+            <dd class="col-sm-9">
+                @Model.Registration?.StudentClass?.Code
+            </dd>
+
+            <dt class="col-sm-3">
+                Discipline
+            </dt>
+
+            <dd class="col-sm-9">
+                @Model.DisciplineClass?.Discipline?.Name
+            </dd>
+
+            <dt class="col-sm-3">
+                Teacher
+            </dt>
+
+            <dd class="col-sm-9">
+                @Model.DisciplineClass?.Teacher?.Name
+            </dd>
+
+            <dt class="col-sm-3">
+                Grade
+            </dt>
+
+            <dd class="col-sm-9">
+                @Model.StudentGrade
+            </dd>
+
+            <dt class="col-sm-3">
+                Frequency
+            </dt>
+
+            <dd class="col-sm-9">
+                @Model.Frequency%
+            </dd>
+
+            <dt class="col-sm-3">
+                Bimester
+            </dt>
+
+            <dd class="col-sm-9">
+                @Model.Bimester
+            </dd>
+
+            <dt class="col-sm-3">
+                School Year
+            </dt>
+
+            <dd class="col-sm-9">
+                @Model.SchoolYear
+            </dd>
+
+        </dl>
+
+        <div class="d-flex gap-2 mt-4">
+
+            <a asp-action="Edit"
+               asp-route-id="@Model.Id"
+               class="btn btn-warning">
+
+                <i class="bi bi-pencil"></i>
+                Edit
+
+            </a>
+
+            <a asp-action="Index"
+               class="btn btn-secondary">
+
+                Back to List
+
+            </a>
+
+        </div>
+
+    </div>
+
+</div>

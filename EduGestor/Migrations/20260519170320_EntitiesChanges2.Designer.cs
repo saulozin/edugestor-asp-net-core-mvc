@@ -3,6 +3,7 @@ using System;
 using EduGestor.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace EduGestor.Migrations
 {
     [DbContext(typeof(EduGestorContext))]
-    partial class EduGestorContextModelSnapshot : ModelSnapshot
+    [Migration("20260519170320_EntitiesChanges2")]
+    partial class EntitiesChanges2
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -91,9 +94,9 @@ namespace EduGestor.Migrations
                     b.Property<Guid?>("DisciplineId")
                         .HasColumnType("uuid");
 
-                    b.Property<decimal>("Frequency")
+                    b.Property<float>("Frequency")
                         .HasPrecision(5, 2)
-                        .HasColumnType("numeric(5,2)");
+                        .HasColumnType("real");
 
                     b.Property<Guid?>("RegistrationId")
                         .HasColumnType("uuid");
@@ -101,9 +104,9 @@ namespace EduGestor.Migrations
                     b.Property<int>("SchoolYear")
                         .HasColumnType("integer");
 
-                    b.Property<decimal>("StudentGrade")
+                    b.Property<float>("StudentGrade")
                         .HasPrecision(5, 2)
-                        .HasColumnType("numeric(5,2)");
+                        .HasColumnType("real");
 
                     b.Property<Guid?>("StudentId")
                         .HasColumnType("uuid");

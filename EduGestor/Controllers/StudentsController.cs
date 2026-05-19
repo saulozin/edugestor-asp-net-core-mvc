@@ -283,14 +283,13 @@ namespace EduGestor.Controllers
         // =========================
         // DELETE
         // =========================
-
         public async Task<IActionResult> Delete(Guid id)
         {
             var student = await _studentService.FindByIdAsync(id);
 
             if (student == null)
             {
-                return NotFound();
+                throw new NotFoundException("Student Id not found.");
             }
 
             return View(student);
