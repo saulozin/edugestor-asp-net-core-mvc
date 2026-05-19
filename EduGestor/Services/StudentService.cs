@@ -1,7 +1,9 @@
 ﻿using EduGestor.Data;
 using EduGestor.Extensions;
 using EduGestor.Models;
+using EduGestor.Models.ViewModels;
 using EduGestor.Services.Exceptions;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 
 namespace EduGestor.Services
@@ -20,6 +22,31 @@ namespace EduGestor.Services
         // =========================
         // STUDENTS LIST
         // =========================
+        public async Task<List<Student>> FindAllSearchAsync(string? searchString)
+        {
+            var query = _context.Students
+
+                .Include(s => s.Guardian)
+
+                .AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(searchString))
+            {
+                query = query.Where(s =>
+
+                    s.Name.Contains(searchString) ||
+
+                    s.Cpf.Contains(searchString) ||
+
+                    (s.Guardian != null &&
+                     s.Guardian.Name.Contains(searchString))
+                );
+            }
+
+            return await query
+                .OrderBy(s => s.Name)
+                .ToListAsync();
+        }
 
         public async Task<List<Student>> FindAllAsync()
         {

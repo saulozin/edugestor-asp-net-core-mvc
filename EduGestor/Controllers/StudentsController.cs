@@ -23,10 +23,12 @@ namespace EduGestor.Controllers
         // =========================
         // INDEX
         // =========================
-
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string? searchString)
         {
-            var students = await _studentService.FindAllAsync();
+            ViewData["CurrentFilter"] = searchString;
+
+            var students =
+                await _studentService.FindAllSearchAsync(searchString);
 
             return View(students);
         }

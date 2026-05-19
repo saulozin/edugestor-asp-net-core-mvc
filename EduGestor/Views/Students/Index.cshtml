@@ -27,6 +27,46 @@
 
 </div>
 
+<!-- SEARCH -->
+<div class="card border-0 shadow-sm rounded-4 mb-4">
+
+    <div class="card-body">
+
+        <form method="get"
+              asp-action="Index">
+
+            <div class="row g-2">
+
+                <div class="col-md-10">
+
+                    <input type="text"
+                           name="searchString"
+                           value="@ViewData["CurrentFilter"]"
+                           class="form-control"
+                           placeholder="Search by name, CPF or guardian..." />
+
+                </div>
+
+                <div class="col-md-2 d-grid">
+
+                    <button type="submit"
+                            class="btn btn-dark">
+
+                        <i class="bi bi-search"></i>
+                        Search
+
+                    </button>
+
+                </div>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
 <div class="card border-0 shadow-sm rounded-4">
 
     <div class="card-body">
@@ -48,6 +88,20 @@
 
             <tbody>
 
+                @if (!Model.Any())
+                {
+                    <tr>
+
+                        <td colspan="6"
+                            class="text-center text-muted py-4">
+
+                            No students found.
+
+                        </td>
+
+                    </tr>
+                }
+
                 @foreach (var student in Model)
                 {
                     <tr>
@@ -59,9 +113,7 @@
                         </td>
 
                         <td>
-                            <strong>
-                                @student.Rg.ToRg()
-                            </strong>
+                            @student.Rg.ToRg()
                         </td>
 
                         <td>
@@ -69,7 +121,7 @@
                         </td>
 
                         <td>
-                            @student.BirthDate
+                            @student.BirthDate.ToString("dd/MM/yyyy")
                         </td>
 
                         <td>
