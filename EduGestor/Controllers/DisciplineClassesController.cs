@@ -30,11 +30,13 @@ namespace EduGestor.Controllers
         // =========================
         // INDEX
         // =========================
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(DisciplineClassSearchViewModel filters)
         {
-            var list = await _disciplineClassService.FindAllAsync();
+            var result = await _disciplineClassService.FindAllSearchAsync(filters);
 
-            return View(list);
+            filters.DisciplineClasses = result;
+
+            return View(filters);
         }
 
         // =========================

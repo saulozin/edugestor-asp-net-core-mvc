@@ -1,4 +1,4 @@
-﻿@model IEnumerable<EduGestor.Models.DisciplineClass>
+﻿@model EduGestor.Models.ViewModels.DisciplineClassSearchViewModel
 
 @{
     ViewData["Title"] = "Academic Assignments";
@@ -26,6 +26,50 @@
 
 </div>
 
+<!-- FILTERS -->
+<div class="card border-0 shadow-sm rounded-4 mb-4">
+
+    <div class="card-body">
+
+        <form method="get"
+              asp-action="Index">
+
+            <div class="row g-3 align-items-end">
+
+                <!-- GLOBAL SEARCH -->
+                <div class="col-md-5">
+
+                    <label class="form-label fw-semibold">
+                        Search
+                    </label>
+
+                    <input asp-for="Search"
+                           class="form-control"
+                           placeholder="class, discipline or teacher..." />
+
+                </div>
+
+                <!-- BUTTON -->
+                <div class="col-md-1 d-grid">
+
+                    <button type="submit"
+                            class="btn btn-dark">
+
+                        <i class="bi bi-search"></i>
+
+                    </button>
+
+                </div>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+<!-- TABLE -->
 <div class="card border-0 shadow-sm rounded-4">
 
     <div class="card-body">
@@ -45,7 +89,7 @@
 
             <tbody>
 
-                @foreach (var obj in Model)
+                @foreach (var obj in Model.DisciplineClasses)
                 {
                     <tr>
 
