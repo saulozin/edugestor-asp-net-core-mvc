@@ -1,4 +1,5 @@
-﻿@model IEnumerable<EduGestor.Models.Registration>
+﻿@model EduGestor.Models.ViewModels.RegistrationSearchViewModel
+@using EduGestor.Models.Enums
 
 @{
     ViewData["Title"] = "Registrations";
@@ -7,13 +8,15 @@
 <div class="d-flex justify-content-between align-items-center mb-4">
 
     <div>
+
         <h2 class="fw-bold mb-1">
             @ViewData["Title"]
         </h2>
 
         <p class="text-muted mb-0">
-            Manage Registrations and your students and classes rooms associations
+            Manage students registrations
         </p>
+
     </div>
 
     <a asp-action="Create"
@@ -26,6 +29,114 @@
 
 </div>
 
+<!-- FILTERS -->
+<div class="card border-0 shadow-sm rounded-4 mb-4">
+
+    <div class="card-body">
+
+        <form method="get"
+              asp-action="Index">
+
+            <div class="row g-3">
+
+                <!-- STUDENT -->
+                <div class="col-md-4">
+
+                    <label asp-for="StudentName"
+                           class="form-label fw-semibold">
+
+                        Student
+
+                    </label>
+
+                    <input asp-for="StudentName"
+                           class="form-control"
+                           placeholder="Search student..." />
+
+                </div>
+
+                <!-- STATUS -->
+                <div class="col-md-2">
+
+                    <label asp-for="Status"
+                           class="form-label fw-semibold">
+
+                        Status
+
+                    </label>
+
+                    <select asp-for="Status"
+                            class="form-select">
+
+                        <option value="">
+                            All
+                        </option>
+
+                        @foreach (var status in Enum.GetValues(typeof(EduGestor.Models.Enums.RegistrationStatus)))
+                        {
+                            <option value="@status">
+                                @status
+                            </option>
+                        }
+
+                    </select>
+
+                </div>
+
+                <!-- START DATE -->
+                <div class="col-md-2">
+
+                    <label asp-for="StartDate"
+                           class="form-label fw-semibold">
+
+                        Start Date
+
+                    </label>
+
+                    <input asp-for="StartDate"
+                           type="date"
+                           class="form-control" />
+
+                </div>
+
+                <!-- END DATE -->
+                <div class="col-md-2">
+
+                    <label asp-for="EndDate"
+                           class="form-label fw-semibold">
+
+                        End Date
+
+                    </label>
+
+                    <input asp-for="EndDate"
+                           type="date"
+                           class="form-control" />
+
+                </div>
+
+                <!-- BUTTON -->
+                <div class="col-md-2 d-grid align-items-end">
+
+                    <button type="submit"
+                            class="btn btn-dark">
+
+                        <i class="bi bi-search"></i>
+                        Search
+
+                    </button>
+
+                </div>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+<!-- TABLE -->
 <div class="card border-0 shadow-sm rounded-4">
 
     <div class="card-body">
@@ -35,41 +146,94 @@
             <thead class="table-light">
 
                 <tr>
-                    <th>Registration Date</th>
-                    <th>Status</th>
-                    <th>Student</th>
-                    <th>Student Class</th>
+
+                    <th>
+                        Registration Date
+                    </th>
+
+                    <th>
+                        Status
+                    </th>
+
+                    <th>
+                        Student
+                    </th>
+
+                    <th>
+                        Student Class
+                    </th>
+
                     <th width="180"></th>
+
                 </tr>
 
             </thead>
 
             <tbody>
 
-                @foreach (var reg in Model)
+                @if (!Model.Registrations!.Any())
                 {
                     <tr>
 
+                        <td colspan="5"
+                            class="text-center text-muted py-4">
+
+                            No registrations found.
+
+                        </td>
+
+                    </tr>
+                }
+
+                @foreach (var reg in Model.Registrations)
+                {
+                    <tr>
+
+                        <!-- DATE -->
                         <td>
+
                             <strong>
                                 @reg.Date
                             </strong>
+
                         </td>
 
+                        <!-- STATUS -->
                         <td>
-                            <strong>
+
+                            @{
+                                var badgeClass = reg.Status switch
+                                {
+                                    RegistrationStatus.Active => "bg-success",
+                                    RegistrationStatus.Pending => "bg-warning",
+                                    RegistrationStatus.Rejected => "bg-danger",
+                                    _ => "bg-secondary"
+                                };
+                            }
+
+                            <span class="badge @badgeClass">
+
                                 @reg.Status
-                            </strong>
+
+                            </span>
+
                         </td>
 
+                        <!-- STUDENT -->
                         <td>
+
                             @reg.Student?.Name
+
                         </td>
 
+                        <!-- CLASS -->
                         <td>
+
                             @reg.StudentClass?.Code
+
                         </td>
 
+                        <!-- ACTIONS -->
                         <td>
 
                             <div class="d-flex gap-2">

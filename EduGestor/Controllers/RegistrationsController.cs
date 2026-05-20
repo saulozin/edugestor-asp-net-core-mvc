@@ -23,11 +23,22 @@ namespace EduGestor.Controllers
             _studentClassService = studentClassService;
         }
 
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(RegistrationSearchViewModel filters)
         {
-            var reg = await _registrationService.FindAllAsync();
+            var result = await _registrationService.FindAllSearchAsync(filters);
+
+            filters.Registrations = result;
+
+            return View(filters);
+        }
+
+        /*
+        public async Task<IActionResult> Index(string? searchString)
+        {
+            var reg = await _registrationService.FindAllSearchAsync(searchString);
             return View(reg);
         }
+        */
 
         // =========================
         // CREATE

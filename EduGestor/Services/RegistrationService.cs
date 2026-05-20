@@ -1,5 +1,8 @@
 ﻿using EduGestor.Data;
+using EduGestor.Extensions;
 using EduGestor.Models;
+using EduGestor.Models.Enums;
+using EduGestor.Models.ViewModels;
 using EduGestor.Services.Exceptions;
 using Microsoft.EntityFrameworkCore;
 
@@ -13,6 +16,94 @@ namespace EduGestor.Services
         {
             _context = context;
         }
+
+        public async Task<List<Registration>> FindAllSearchAsync(RegistrationSearchViewModel filters)
+        {
+            var query = _context.Registrations
+                .Include(r => r.Student)
+                    .ThenInclude(s => s.Guardian)
+                .Include(r => r.StudentClass)
+                .AsQueryable();
+
+            // STUDENT NAME
+            if (!string.IsNullOrWhiteSpace(filters.StudentName))
+            {
+                query = query.Where(r =>
+                    EF.Functions.ILike(r.Student!.Name, $"%{filters.StudentName}%")
+                );
+            }
+
+            // STATUS
+            if (filters.Status.HasValue)
+            {
+                query = query.Where(r => r.Status == filters.Status.Value);
+            }
+
+            // START DATE
+            if (filters.StartDate.HasValue)
+            {
+                query = query.Where(r => r.Date >= filters.StartDate.Value);
+            }
+
+            // END DATE
+            if (filters.EndDate.HasValue)
+            {
+                query = query.Where(r => r.Date <= filters.EndDate.Value);
+            }
+
+            // CLASS
+            if (filters.StudentClassId.HasValue)
+            {
+                query = query.Where(r => r.StudentClassId == filters.StudentClassId);
+            }
+
+            return await query
+                .OrderByDescending(r => r.CreatedAt)
+                .ToListAsync();
+        }
+
+        /*
+        public async Task<List<Registration>> FindAllSearchAsync(string? searchString)
+        {
+            var query = _context.Registrations
+                .Include(r => r.Student)
+                    .ThenInclude(s => s.Guardian)
+                .Include(r => r.StudentClass)
+                .AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(searchString))
+            {
+                searchString = searchString.Trim();
+
+                // DATE
+                bool isDate =
+                    DateOnly.TryParse(searchString, out DateOnly parsedDate);
+
+                // STATUS
+                bool isStatus =
+                    Enum.TryParse<RegistrationStatus>(
+                        searchString,
+                        true,
+                        out var parsedStatus);
+
+                query = query.Where(r =>
+
+                    // STUDENT
+                    EF.Functions.ILike(r.Student!.Name,$"%{searchString}%") ||
+
+                    // STATUS
+                    (isStatus && r.Status == parsedStatus) ||
+
+                    // DATE
+                    (isDate && r.Date == parsedDate)
+                );
+            }
+
+            return await query
+                .OrderByDescending(r => r.CreatedAt)
+                .ToListAsync();
+        }
+        */
 
         public async Task<List<Registration>> FindAllAsync()
         {
