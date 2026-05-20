@@ -16,9 +16,15 @@ namespace EduGestor.Controllers
             _disciplineService = disciplineService;
         }
 
-        public async Task<IActionResult> Index()
+        // =======================
+        // INDEX
+        // =======================
+        public async Task<IActionResult> Index(string? searchString)
         {
-            var disc = await _disciplineService.FindAllAsync();
+            ViewData["CurrentFilter"] = searchString;
+
+            var disc = await _disciplineService.FindAllSearchAsync(searchString);
+
             return View(disc);
         }
 

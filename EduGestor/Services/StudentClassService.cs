@@ -1,6 +1,7 @@
 ﻿using EduGestor.Data;
 using EduGestor.Extensions;
 using EduGestor.Models;
+using EduGestor.Models.ViewModels;
 using EduGestor.Services.Exceptions;
 using Microsoft.EntityFrameworkCore;
 
@@ -23,6 +24,44 @@ namespace EduGestor.Services
                 .OrderBy(sc => sc.Level)
                 .ThenBy(sc => sc.Series)
                 .ThenBy(sc => sc.Shift)
+                .ToListAsync();
+        }
+
+        public async Task<List<StudentClass>> FindAllSearchAsync(StudentClassSearchViewModel filters)
+        {
+            var query = _context.StudentClasses
+                .Include(sc => sc.Registrations)
+                .Include(sc => sc.DisciplineClasses)
+                .AsQueryable();
+
+            // Education Level
+            if (filters.EduLevel.HasValue)
+            {
+                query = query.Where(sc => sc.Level == filters.EduLevel);
+            }
+
+            // Student Series
+            if (filters.StudentSeries.HasValue)
+            {
+                query = query.Where(sc => sc.Series == filters.StudentSeries);
+            }
+
+            // Student Shift
+            if (filters.ClassShift.HasValue)
+            {
+                query = query.Where(sc => sc.Shift == filters.ClassShift);
+            }
+
+            // Class Code
+            if (!string.IsNullOrWhiteSpace(filters.ClassCode))
+            {
+                query = query.Where(sc =>
+                    EF.Functions.ILike(sc.Code, $"%{filters.ClassCode}%")
+                );
+            }
+
+            return await query
+                .OrderBy(sc => sc.Level)
                 .ToListAsync();
         }
 

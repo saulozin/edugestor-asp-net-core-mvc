@@ -16,10 +16,13 @@ namespace EduGestor.Controllers
             _studentClassService = studentClassService;
         }
 
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(StudentClassSearchViewModel filters)
         {
-            var list = await _studentClassService.FindAllAsync();
-            return View(list);
+            var result = await _studentClassService.FindAllSearchAsync(filters);
+
+            filters.StudentClasses = result;
+
+            return View(filters);
         }
 
         // =========================

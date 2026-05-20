@@ -24,6 +24,7 @@ namespace EduGestor.Services
         public async Task<List<Guardian>> FindAllSearchAsync(string? searchString)
         {
             var query = _context.Guardians
+                .Include(g => g.Students)
                 .AsQueryable();
 
             if (!string.IsNullOrWhiteSpace(searchString))

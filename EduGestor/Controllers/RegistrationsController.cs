@@ -32,14 +32,6 @@ namespace EduGestor.Controllers
             return View(filters);
         }
 
-        /*
-        public async Task<IActionResult> Index(string? searchString)
-        {
-            var reg = await _registrationService.FindAllSearchAsync(searchString);
-            return View(reg);
-        }
-        */
-
         // =========================
         // CREATE
         // =========================

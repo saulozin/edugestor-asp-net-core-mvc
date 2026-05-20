@@ -62,49 +62,6 @@ namespace EduGestor.Services
                 .ToListAsync();
         }
 
-        /*
-        public async Task<List<Registration>> FindAllSearchAsync(string? searchString)
-        {
-            var query = _context.Registrations
-                .Include(r => r.Student)
-                    .ThenInclude(s => s.Guardian)
-                .Include(r => r.StudentClass)
-                .AsQueryable();
-
-            if (!string.IsNullOrWhiteSpace(searchString))
-            {
-                searchString = searchString.Trim();
-
-                // DATE
-                bool isDate =
-                    DateOnly.TryParse(searchString, out DateOnly parsedDate);
-
-                // STATUS
-                bool isStatus =
-                    Enum.TryParse<RegistrationStatus>(
-                        searchString,
-                        true,
-                        out var parsedStatus);
-
-                query = query.Where(r =>
-
-                    // STUDENT
-                    EF.Functions.ILike(r.Student!.Name,$"%{searchString}%") ||
-
-                    // STATUS
-                    (isStatus && r.Status == parsedStatus) ||
-
-                    // DATE
-                    (isDate && r.Date == parsedDate)
-                );
-            }
-
-            return await query
-                .OrderByDescending(r => r.CreatedAt)
-                .ToListAsync();
-        }
-        */
-
         public async Task<List<Registration>> FindAllAsync()
         {
             return await _context.Registrations

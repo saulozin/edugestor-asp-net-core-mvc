@@ -1,4 +1,5 @@
 ﻿using EduGestor.Data;
+using EduGestor.Extensions;
 using EduGestor.Models;
 using EduGestor.Services.Exceptions;
 using Microsoft.EntityFrameworkCore;
@@ -18,6 +19,28 @@ namespace EduGestor.Services
         public async Task<List<Discipline>> FindAllAsync()
         {
             return await _context.Disciplines
+                .OrderBy(d => d.Name)
+                .ToListAsync();
+        }
+
+        public async Task<List<Discipline>> FindAllSearchAsync(string? searchString)
+        {
+            var query = _context.Disciplines
+                .Include(d => d.DisciplineClasses)
+                .Include(d => d.Grades)
+                .AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(searchString))
+            {
+                searchString = searchString.Trim();
+
+                query = query.Where(d =>
+                    // Nome (case insensitive)
+                    EF.Functions.ILike(d.Name, $"%{searchString}%")
+                );
+            }
+
+            return await query
                 .OrderBy(d => d.Name)
                 .ToListAsync();
         }
