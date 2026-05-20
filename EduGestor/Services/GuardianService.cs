@@ -41,10 +41,13 @@ namespace EduGestor.Services
                     // Email (case insensitive)
                     EF.Functions.ILike(g.Email, $"%{searchString}%") ||
 
-                    // CPF sem máscara
-                    g.Cpf.Replace(".", "")
-                        .Replace("-", "")
-                        .Contains(normalizedSearch));
+                    // CPF
+                    (!string.IsNullOrEmpty(normalizedSearch) &&
+
+                        g.Cpf.Replace(".", "")
+                            .Replace("-", "")
+                            .Contains(normalizedSearch))
+                );
             }
 
             return await query

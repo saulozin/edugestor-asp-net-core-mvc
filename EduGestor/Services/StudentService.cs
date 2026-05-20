@@ -40,10 +40,12 @@ namespace EduGestor.Services
                     // Nome (case insensitive)
                     EF.Functions.ILike(s.Name, $"%{searchString}%") ||
 
-                    // CPF sem máscara
-                    s.Cpf.Replace(".", "")
-                        .Replace("-", "")
-                        .Contains(normalizedSearch) ||
+                    // CPF
+                    (!string.IsNullOrEmpty(normalizedSearch) &&
+
+                        s.Cpf.Replace(".", "")
+                            .Replace("-", "")
+                            .Contains(normalizedSearch)) ||
 
                     (s.Guardian != null &&
                         EF.Functions.ILike(s.Guardian.Name, $"%{searchString}%"))

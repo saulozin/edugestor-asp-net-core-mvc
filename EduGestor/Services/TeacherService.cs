@@ -17,6 +17,40 @@ namespace EduGestor.Services
             _validate = validate;
         }
 
+        public async Task<List<Teacher>> FindAllSearchAsync(string? searchString)
+        {
+            var query = _context.Teachers
+                .AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(searchString))
+            {
+                searchString = searchString.Trim();
+
+                // Remove máscara do CPF digitado
+                var normalizedSearch = searchString.OnlyNumbers();
+
+
+                query = query.Where(t =>
+                    // Nome (case insensitive)
+                    EF.Functions.ILike(t.Name, $"%{searchString}%") ||
+
+                    // Email (case insensitive)
+                    EF.Functions.ILike(t.Email, $"%{searchString}%") ||
+
+                    // CPF
+                    (!string.IsNullOrEmpty(normalizedSearch) &&
+
+                        t.Cpf.Replace(".", "")
+                            .Replace("-", "")
+                            .Contains(normalizedSearch))
+                );
+            }
+
+            return await query
+                .OrderBy(t => t.Name)
+                .ToListAsync();
+        }
+
         public async Task<List<Teacher>> FindAllAsync()
         {
             return await _context.Teachers
