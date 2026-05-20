@@ -3,6 +3,7 @@ using EduGestor.Extensions;
 using EduGestor.Models;
 using EduGestor.Services.Exceptions;
 using Microsoft.EntityFrameworkCore;
+using System.Text.RegularExpressions;
 
 namespace EduGestor.Services
 {
@@ -20,6 +21,36 @@ namespace EduGestor.Services
         // =========================
         // GUARDIANS
         // =========================
+        public async Task<List<Guardian>> FindAllSearchAsync(string? searchString)
+        {
+            var query = _context.Guardians
+                .AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(searchString))
+            {
+                searchString = searchString.Trim();
+
+                // Remove máscara do CPF digitado
+                var normalizedSearch = searchString.OnlyNumbers();
+                    
+
+                query = query.Where(g =>
+                    // Nome (case insensitive)
+                    EF.Functions.ILike(g.Name, $"%{searchString}%") ||
+
+                    // Email (case insensitive)
+                    EF.Functions.ILike(g.Email, $"%{searchString}%") ||
+
+                    // CPF sem máscara
+                    g.Cpf.Replace(".", "")
+                        .Replace("-", "")
+                        .Contains(normalizedSearch));
+            }
+
+            return await query
+                .OrderBy(g => g.Name)
+                .ToListAsync();
+        }
 
         public async Task<List<Guardian>> FindAllAsync()
         {

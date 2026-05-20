@@ -9,11 +9,11 @@
 
     <div>
         <h2 class="fw-bold mb-1">
-            Guardians
+            @ViewData["Title"]
         </h2>
 
         <p class="text-muted mb-0">
-            Manage guardians and student associations
+            Manage your students @ViewData["Title"]
         </p>
     </div>
 
@@ -24,6 +24,46 @@
         New Guardian
 
     </a>
+
+</div>
+
+<!-- SEARCH -->
+<div class="card border-0 shadow-sm rounded-4 mb-4">
+
+    <div class="card-body">
+
+        <form method="get"
+              asp-action="Index">
+
+            <div class="row g-2">
+
+                <div class="col-md-10">
+
+                    <input type="text"
+                           name="searchString"
+                           value="@ViewData["CurrentFilter"]"
+                           class="form-control"
+                           placeholder="Search by name, CPF or email..." />
+
+                </div>
+
+                <div class="col-md-2 d-grid">
+
+                    <button type="submit"
+                            class="btn btn-dark">
+
+                        <i class="bi bi-search"></i>
+                        Search
+
+                    </button>
+
+                </div>
+
+            </div>
+
+        </form>
+
+    </div>
 
 </div>
 
@@ -47,6 +87,20 @@
             </thead>
 
             <tbody>
+
+                @if (!Model.Any())
+                {
+                    <tr>
+
+                        <td colspan="6"
+                            class="text-center text-muted py-4">
+
+                            No guardians found.
+
+                        </td>
+
+                    </tr>
+                }
 
                 @foreach (var guardian in Model)
                 {

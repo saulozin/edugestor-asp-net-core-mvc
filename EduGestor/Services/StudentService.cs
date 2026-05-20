@@ -25,21 +25,28 @@ namespace EduGestor.Services
         public async Task<List<Student>> FindAllSearchAsync(string? searchString)
         {
             var query = _context.Students
-
                 .Include(s => s.Guardian)
-
                 .AsQueryable();
 
             if (!string.IsNullOrWhiteSpace(searchString))
             {
+                searchString = searchString.Trim();
+
+                // Remove máscara do CPF digitado
+                var normalizedSearch = searchString.OnlyNumbers();
+
                 query = query.Where(s =>
 
-                    s.Name.Contains(searchString) ||
+                    // Nome (case insensitive)
+                    EF.Functions.ILike(s.Name, $"%{searchString}%") ||
 
-                    s.Cpf.Contains(searchString) ||
+                    // CPF sem máscara
+                    s.Cpf.Replace(".", "")
+                        .Replace("-", "")
+                        .Contains(normalizedSearch) ||
 
                     (s.Guardian != null &&
-                     s.Guardian.Name.Contains(searchString))
+                        EF.Functions.ILike(s.Guardian.Name, $"%{searchString}%"))
                 );
             }
 

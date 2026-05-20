@@ -25,5 +25,10 @@ namespace EduGestor.Extensions
                 @"(\d{2})(\d{5})(\d{4})",
                 "($1)$2-$3");
         }
+
+        public static string OnlyNumbers(this string value)
+        {
+            return Regex.Replace(value ?? "", @"\D", "");
+        }
     }
 }
