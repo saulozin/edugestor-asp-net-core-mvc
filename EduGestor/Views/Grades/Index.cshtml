@@ -1,8 +1,20 @@
-﻿@model IEnumerable<EduGestor.Models.Grade>
+﻿@model EduGestor.Models.ViewModels.GradeSearchViewModel
 
 @{
     ViewData["Title"] = "Grades";
 }
+
+<style>
+
+    td, th {
+        vertical-align: middle !important;
+    }
+
+    table {
+        white-space: nowrap;
+    }
+
+</style>
 
 <div class="d-flex justify-content-between align-items-center mb-4">
 
@@ -28,26 +40,160 @@
 
 </div>
 
+<!-- FILTERS -->
+<div class="card border-0 shadow-sm rounded-4 mb-4">
+
+    <div class="card-body">
+
+        <form method="get"
+              asp-action="Index">
+
+            <div class="row g-3 align-items-end">
+
+                <!-- GLOBAL SEARCH -->
+                <div class="col-md-5">
+
+                    <label class="form-label fw-semibold">
+                        Search
+                    </label>
+
+                    <input asp-for="Search"
+                           class="form-control"
+                           placeholder="Student, class, discipline or teacher..." />
+
+                </div>
+
+                <!-- GRADE RANGE -->
+                <div class="col-md-2">
+
+                    <label asp-for="MinGrade"
+                           class="form-label fw-semibold">
+
+                        Min Grade
+
+                    </label>
+
+                    <input asp-for="MinGrade"
+                           type="number"
+                           step="0.01"
+                           class="form-control" />
+
+                </div>
+
+                <div class="col-md-2">
+
+                    <label asp-for="MaxGrade"
+                           class="form-label fw-semibold">
+
+                        Max Grade
+
+                    </label>
+
+                    <input asp-for="MaxGrade"
+                           type="number"
+                           step="0.01"
+                           class="form-control" />
+
+                </div>
+
+                <!-- STATUS -->
+                <div class="col-md-2">
+
+                    <label asp-for="Approved"
+                           class="form-label fw-semibold">
+
+                        Status
+
+                    </label>
+
+                    <select asp-for="Approved"
+                            class="form-select">
+
+                        <option value="">
+                            All
+                        </option>
+
+                        <option value="true">
+                            Approved
+                        </option>
+
+                        <option value="false">
+                            Failed
+                        </option>
+
+                    </select>
+
+                </div>
+
+                <!-- BUTTON -->
+                <div class="col-md-1 d-grid">
+
+                    <button type="submit"
+                            class="btn btn-dark">
+
+                        <i class="bi bi-search"></i>
+
+                    </button>
+
+                </div>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+<!-- TABLE -->
 <div class="card border-0 shadow-sm rounded-4">
 
     <div class="card-body">
 
         <div class="table-responsive">
 
-            <table class="table align-middle table-hover">
+            <table class="table table-hover align-middle">
 
                 <thead class="table-light">
 
                     <tr>
 
-                        <th>Student</th>
-                        <th>Class</th>
-                        <th>Discipline</th>
-                        <th>Teacher</th>
-                        <th>Grade</th>
-                        <th>Frequency</th>
-                        <th>Bimester</th>
-                        <th>Year</th>
+                        <th style="min-width: 220px;">
+                            Student
+                        </th>
+
+                        <th style="min-width: 120px;">
+                            Class
+                        </th>
+
+                        <th style="min-width: 180px;">
+                            Discipline
+                        </th>
+
+                        <th style="min-width: 200px;">
+                            Teacher
+                        </th>
+
+                        <th class="text-center">
+                            Grade
+                        </th>
+
+                        <th class="text-center">
+                            Frequency
+                        </th>
+
+                        <th class="text-center">
+                            Status
+                        </th>
+
+                        <th class="text-center">
+                            Bimester
+                        </th>
+
+                        <th class="text-center">
+                            Year
+                        </th>
+
                         <th width="180"></th>
 
                     </tr>
@@ -56,63 +202,121 @@
 
                 <tbody>
 
-                    @foreach (var item in Model)
+                    @if (!Model.Grades!.Any())
                     {
+                        <tr>
+
+                            <td colspan="10"
+                                class="text-center text-muted py-5">
+
+                                No grades found.
+
+                            </td>
+
+                        </tr>
+                    }
+
+                    @foreach (var item in Model.Grades)
+                    {
+                        var approved =
+                            item.Registration?
+                            .IsApproved(item.DisciplineClassId ?? Guid.Empty);
+
                         <tr>
 
                             <!-- STUDENT -->
                             <td>
 
-                                <strong>
-                                    @item.Registration?.Student?.Name
-                                </strong>
+                                <div class="fw-semibold">
+
+                                    @(item.Registration?
+                                    .Student?
+                                    .Name)
+
+                                </div>
 
                             </td>
 
                             <!-- CLASS -->
                             <td>
 
-                                <span class="badge bg-primary">
-                                    @item.Registration?.StudentClass?.Code                                   
+                                <span class="badge bg-primary rounded-pill px-3 py-2">
+
+                                    @(item.Registration?
+                                    .StudentClass?
+                                    .Code)
+
                                 </span>
 
                             </td>
 
                             <!-- DISCIPLINE -->
                             <td>
-                                @item.DisciplineClass?.Discipline?.Name                                                             
+
+                                @(item.DisciplineClass?
+                                .Discipline?
+                                .Name)
+
                             </td>
 
                             <!-- TEACHER -->
                             <td>
-                                @item.DisciplineClass?.Teacher?.Name
+
+                                @(item.DisciplineClass?
+                                .Teacher?
+                                .Name)
+
                             </td>
 
                             <!-- GRADE -->
-                            <td>
+                            <td class="text-center">
 
-                                <strong>
+                                <strong class="fs-6">
+
                                     @item.StudentGrade.ToString("F1")
+
                                 </strong>
 
                             </td>
 
                             <!-- FREQUENCY -->
-                            <td>
+                            <td class="text-center">
 
-                                @item.Frequency.ToString("F2")%
+                                @item.Frequency.ToString("F0")%
+
+                            </td>
+
+                            <!-- STATUS -->
+                            <td class="text-center">
+
+                                @if (approved == true)
+                                {
+                                    <span class="badge bg-success px-3 py-2">
+
+                                        Approved
+
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-danger px-3 py-2">
+
+                                        Failed
+
+                                    </span>
+                                }
 
                             </td>
 
                             <!-- BIMESTER -->
-                            <td>
+                            <td class="text-center">
 
                                 @item.Bimester º
 
                             </td>
 
                             <!-- YEAR -->
-                            <td>
+                            <td class="text-center">
 
                                 @item.SchoolYear
 

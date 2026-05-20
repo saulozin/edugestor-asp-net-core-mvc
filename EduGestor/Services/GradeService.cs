@@ -1,5 +1,6 @@
 ﻿using EduGestor.Data;
 using EduGestor.Models;
+using EduGestor.Models.ViewModels;
 using EduGestor.Services.Exceptions;
 using Microsoft.EntityFrameworkCore;
 
@@ -37,6 +38,106 @@ namespace EduGestor.Services
 
                 .OrderByDescending(g => g.CreatedAt)
 
+                .ToListAsync();
+        }
+
+        public async Task<List<Grade>> FindAllSearchAsync(GradeSearchViewModel filters)
+        {
+            var query = _context.Grades
+                .Include(g => g.Registration)
+                    .ThenInclude(r => r!.Student)
+                .Include(g => g.Registration)
+                    .ThenInclude(r => r!.StudentClass)
+                .Include(g => g.DisciplineClass)
+                    .ThenInclude(dc => dc!.Discipline)
+                .Include(g => g.DisciplineClass)
+                    .ThenInclude(dc => dc!.Teacher)
+                .AsQueryable();
+
+            // Global Search
+            if (!string.IsNullOrWhiteSpace(filters.Search))
+            {
+                var search = filters.Search.Trim();
+
+                query = query.Where(g =>
+
+                    EF.Functions.ILike(
+                        g.Registration!.Student!.Name,
+                        $"%{search}%")
+
+                    ||
+
+                    EF.Functions.ILike(
+                        g.Registration.StudentClass!.Code,
+                        $"%{search}%")
+
+                    ||
+
+                    EF.Functions.ILike(
+                        g.DisciplineClass!.Discipline!.Name,
+                        $"%{search}%")
+
+                    ||
+
+                    EF.Functions.ILike(
+                        g.DisciplineClass.Teacher!.Name,
+                        $"%{search}%")
+                );
+            }
+
+            // Student grades
+            if (filters.MinGrade.HasValue)
+            {
+                query = query.Where(g =>
+                    g.StudentGrade >= filters.MinGrade.Value);
+            }
+
+            if (filters.MaxGrade.HasValue)
+            {
+                query = query.Where(g =>
+                    g.StudentGrade <= filters.MaxGrade.Value);
+            }
+
+            // Student Frequancies
+            if (filters.MinFrequency.HasValue)
+            {
+                query = query.Where(g =>
+                    g.Frequency >= filters.MinFrequency.Value);
+            }
+
+            // Bimester
+            if (filters.Bimester.HasValue)
+            {
+                query = query.Where(g => g.Bimester == filters.Bimester);
+            }
+
+            // School Year
+            if (filters.SchoolYear.HasValue)
+            {
+                query = query.Where(g => g.SchoolYear == filters.SchoolYear);
+            }
+
+            // Student Status
+            if (filters.Approved.HasValue)
+            {
+                if (filters.Approved.Value)
+                {
+                    // APPROVED
+                    query = query.Where(g =>
+                        g.StudentGrade >= 6.0m &&
+                        g.Frequency >= 75.0m);
+                }
+                else
+                {
+                    // FAILED
+                    query = query.Where(g =>
+                        g.StudentGrade < 6.0m ||
+                        g.Frequency < 75.0m);
+                }
+            }
+
+            return await query
+                .OrderBy(g => g.Registration!.Student!.Name)
                 .ToListAsync();
         }
 

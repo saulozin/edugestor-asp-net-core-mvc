@@ -72,12 +72,13 @@ namespace EduGestor.Controllers
         // INDEX
         // =========================
 
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(GradeSearchViewModel filters)
         {
-            var grades =
-                await _gradeService.FindAllAsync();
+            var grades = await _gradeService.FindAllSearchAsync(filters);
 
-            return View(grades);
+            filters.Grades = grades;
+
+            return View(filters);
         }
 
         // =========================
