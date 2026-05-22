@@ -22,39 +22,63 @@ namespace EduGestor.Services
         // =========================
         // STUDENTS LIST
         // =========================
-        public async Task<List<Student>> FindAllSearchAsync(string? searchString)
+        public async Task<StudentSearchViewModel> FindAllSearchAsync(StudentSearchViewModel filters)
         {
             var query = _context.Students
                 .Include(s => s.Guardian)
                 .AsQueryable();
 
-            if (!string.IsNullOrWhiteSpace(searchString))
+            if (!string.IsNullOrWhiteSpace(filters.SearchTerm))
             {
-                searchString = searchString.Trim();
+                filters.SearchTerm = filters.SearchTerm.Trim();
 
                 // Remove máscara do CPF digitado
-                var normalizedSearch = searchString.OnlyNumbers();
+                var normalizedSearch = filters.SearchTerm.OnlyNumbers();
 
                 query = query.Where(s =>
 
-                    // Nome (case insensitive)
-                    EF.Functions.ILike(s.Name, $"%{searchString}%") ||
+                    // NAME
+                    EF.Functions.ILike(
+                        s.Name,
+                        $"%{filters.SearchTerm}%")
+
+                    ||
 
                     // CPF
                     (!string.IsNullOrEmpty(normalizedSearch) &&
 
                         s.Cpf.Replace(".", "")
                             .Replace("-", "")
-                            .Contains(normalizedSearch)) ||
+                            .Contains(normalizedSearch))
 
+                    ||
+
+                    // GUARDIAN
                     (s.Guardian != null &&
-                        EF.Functions.ILike(s.Guardian.Name, $"%{searchString}%"))
+
+                        EF.Functions.ILike(
+                            s.Guardian.Name,
+                            $"%{filters.SearchTerm}%"))
                 );
             }
 
-            return await query
+            // TOTAL ITEMS
+            var totalItems = await query.CountAsync();
+
+            // PAGINATION
+            var students = await query
                 .OrderBy(s => s.Name)
+                .Skip((filters.PageNumber - 1) * filters.PageSize)
+                .Take(filters.PageSize)
                 .ToListAsync();
+
+            filters.Students = students;
+
+            filters.TotalPages =
+                (int)Math.Ceiling(
+                    totalItems / (double)filters.PageSize);
+
+            return filters;
         }
 
         public async Task<List<Student>> FindAllAsync()

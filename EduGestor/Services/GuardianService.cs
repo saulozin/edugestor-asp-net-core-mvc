@@ -1,6 +1,7 @@
 ﻿using EduGestor.Data;
 using EduGestor.Extensions;
 using EduGestor.Models;
+using EduGestor.Models.ViewModels;
 using EduGestor.Services.Exceptions;
 using Microsoft.EntityFrameworkCore;
 using System.Text.RegularExpressions;
@@ -21,26 +22,26 @@ namespace EduGestor.Services
         // =========================
         // GUARDIANS
         // =========================
-        public async Task<List<Guardian>> FindAllSearchAsync(string? searchString)
+        public async Task<GuardianSearchViewModel> FindAllSearchAsync(GuardianSearchViewModel filters)
         {
             var query = _context.Guardians
                 .Include(g => g.Students)
                 .AsQueryable();
 
-            if (!string.IsNullOrWhiteSpace(searchString))
+            if (!string.IsNullOrWhiteSpace(filters.SearchTerm))
             {
-                searchString = searchString.Trim();
+                filters.SearchTerm = filters.SearchTerm.Trim();
 
                 // Remove máscara do CPF digitado
-                var normalizedSearch = searchString.OnlyNumbers();
+                var normalizedSearch = filters.SearchTerm.OnlyNumbers();
                     
 
                 query = query.Where(g =>
                     // Nome (case insensitive)
-                    EF.Functions.ILike(g.Name, $"%{searchString}%") ||
+                    EF.Functions.ILike(g.Name, $"%{filters.SearchTerm}%") ||
 
                     // Email (case insensitive)
-                    EF.Functions.ILike(g.Email, $"%{searchString}%") ||
+                    EF.Functions.ILike(g.Email, $"%{filters.SearchTerm}%") ||
 
                     // CPF
                     (!string.IsNullOrEmpty(normalizedSearch) &&
@@ -51,9 +52,23 @@ namespace EduGestor.Services
                 );
             }
 
-            return await query
+            // TOTAL ITEMS
+            var totalItems = await query.CountAsync();
+
+            // PAGINATION
+            var guardians = await query
                 .OrderBy(g => g.Name)
+                .Skip((filters.PageNumber - 1) * filters.PageSize)
+                .Take(filters.PageSize)
                 .ToListAsync();
+
+            filters.Guardians = guardians;
+
+            filters.TotalPages =
+                (int)Math.Ceiling(
+                    totalItems / (double)filters.PageSize);
+
+            return filters;
         }
 
         public async Task<List<Guardian>> FindAllAsync()

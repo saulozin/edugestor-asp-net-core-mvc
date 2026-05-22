@@ -1,4 +1,4 @@
-﻿@model IEnumerable<EduGestor.Models.Guardian>
+﻿@model EduGestor.Models.ViewModels.GuardianSearchViewModel
 @using EduGestor.Extensions
 
 @{
@@ -39,9 +39,7 @@
 
                 <div class="col-md-10">
 
-                    <input type="text"
-                           name="searchString"
-                           value="@ViewData["CurrentFilter"]"
+                    <input asp-for="SearchTerm"
                            class="form-control"
                            placeholder="Search by name, CPF or email..." />
 
@@ -88,7 +86,7 @@
 
             <tbody>
 
-                @if (!Model.Any())
+                @if (!Model.Guardians!.Any())
                 {
                     <tr>
 
@@ -102,7 +100,7 @@
                     </tr>
                 }
 
-                @foreach (var guardian in Model)
+                @foreach (var guardian in Model.Guardians!)
                 {
                     <tr>
 
@@ -176,3 +174,69 @@
     </div>
 
 </div>
+
+<!-- PAGINATION -->
+@if (Model.TotalPages > 1)
+{
+    <nav class="mt-4">
+
+        <ul class="pagination justify-content-center">
+
+            <!-- PREVIOUS -->
+            <li class="page-item
+                @(Model.PageNumber == 1 ? "disabled" : "")">
+
+                <a class="page-link"
+                   asp-action="Index"
+                   asp-route-PageNumber="@(Model.PageNumber - 1)"
+                   asp-route-SearchTerm="@Model.SearchTerm">
+
+                    Previous
+
+                </a>
+
+            </li>
+
+            @for (int i = 1; i <= Model.TotalPages; i++)
+            {
+                <li class="page-item
+                    @(i == Model.PageNumber ? "active" : "")">
+
+                    <a class="page-link"
+                       asp-action="Index"
+                       asp-route-PageNumber="@i"
+                       asp-route-SearchTerm="@Model.SearchTerm">
+
+                        @i
+
+                    </a>
+
+                </li>
+            }
+
+            <!-- NEXT -->
+            <li class="page-item
+                @(Model.PageNumber == Model.TotalPages
+                    ? "disabled" : "")">
+
+                <a class="page-link"
+                   asp-action="Index"
+                   asp-route-PageNumber="@(Model.PageNumber + 1)"
+                   asp-route-SearchTerm="@Model.SearchTerm">
+
+                    Next
+
+                </a>
+
+            </li>
+
+        </ul>
+
+    </nav>
+}
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

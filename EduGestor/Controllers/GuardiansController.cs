@@ -21,13 +21,13 @@ namespace EduGestor.Controllers
         // INDEX
         // =========================
 
-        public async Task<IActionResult> Index(string? searchString)
+        public async Task<IActionResult> Index(GuardianSearchViewModel filters)
         {
-            ViewData["CurrentFilter"] = searchString;
+            ViewData["CurrentFilter"] = filters.SearchTerm;
 
-            var guardians = await _guardianService.FindAllSearchAsync(searchString);
+            var vm = await _guardianService.FindAllSearchAsync(filters);
 
-            return View(guardians);
+            return View(vm);
         }
 
         // =========================

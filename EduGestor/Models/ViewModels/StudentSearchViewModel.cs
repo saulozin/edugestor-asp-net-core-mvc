@@ -8,10 +8,14 @@ namespace EduGestor.Models.ViewModels
 
         public Guid? StudentClassId { get; set; }
 
-        public List<SelectListItem> Classes { get; set; }
-            = new();
+        public int PageNumber { get; set; } = 1;
 
-        public IEnumerable<Student> Students { get; set; }
-            = new List<Student>();
+        public int PageSize { get; set; } = 10;
+
+        public int TotalPages { get; set; }
+
+        public IEnumerable<SelectListItem> Classes { get; set; } = new List<SelectListItem>();
+
+        public IEnumerable<Student>? Students { get; set; } = new List<Student>();
     }
 }
