@@ -4,7 +4,6 @@ using EduGestor.Services;
 using EduGestor.Services.Exceptions;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace EduGestor.Controllers
 {
@@ -21,7 +20,7 @@ namespace EduGestor.Controllers
         // INDEX
         // =========================
 
-        public async Task<IActionResult> Index(GuardianSearchViewModel filters)
+        public async Task<IActionResult> Index(PagedViewModel<Guardian> filters)
         {
             ViewData["CurrentFilter"] = filters.SearchTerm;
 

@@ -22,7 +22,7 @@ namespace EduGestor.Services
         // =========================
         // GUARDIANS
         // =========================
-        public async Task<GuardianSearchViewModel> FindAllSearchAsync(GuardianSearchViewModel filters)
+        public async Task<PagedViewModel<Guardian>> FindAllSearchAsync(PagedViewModel<Guardian> filters)
         {
             var query = _context.Guardians
                 .Include(g => g.Students)
@@ -62,7 +62,7 @@ namespace EduGestor.Services
                 .Take(filters.PageSize)
                 .ToListAsync();
 
-            filters.Guardians = guardians;
+            filters.Items = guardians;
 
             filters.TotalPages =
                 (int)Math.Ceiling(

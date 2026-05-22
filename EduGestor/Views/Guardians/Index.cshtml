@@ -1,4 +1,4 @@
-﻿@model EduGestor.Models.ViewModels.GuardianSearchViewModel
+﻿@model EduGestor.Models.ViewModels.PagedViewModel<Guardian>
 @using EduGestor.Extensions
 
 @{
@@ -86,7 +86,7 @@
 
             <tbody>
 
-                @if (!Model.Guardians!.Any())
+                @if (!Model.Items!.Any())
                 {
                     <tr>
 
@@ -100,7 +100,7 @@
                     </tr>
                 }
 
-                @foreach (var guardian in Model.Guardians!)
+                @foreach (var guardian in Model.Items!)
                 {
                     <tr>
 

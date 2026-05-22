@@ -19,12 +19,12 @@ namespace EduGestor.Controllers
             _teacherService = teacherService;
         }
 
-        public async Task<IActionResult> Index(string? searchString)
+        public async Task<IActionResult> Index(PagedViewModel<Teacher> filters)
         {
-            ViewData["CurrentFilter"] = searchString;
+            ViewData["CurrentFilter"] = filters.SearchTerm;
 
-            var teachers = await _teacherService.FindAllSearchAsync(searchString);
-            return View(teachers);
+            var vm = await _teacherService.FindAllSearchAsync(filters);
+            return View(vm);
         }
 
         // =========================
