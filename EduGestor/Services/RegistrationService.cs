@@ -17,11 +17,11 @@ namespace EduGestor.Services
             _context = context;
         }
 
-        public async Task<List<Registration>> FindAllSearchAsync(RegistrationSearchViewModel filters)
+        public async Task<RegistrationSearchViewModel> FindAllSearchAsync(RegistrationSearchViewModel filters)
         {
             var query = _context.Registrations
                 .Include(r => r.Student)
-                    .ThenInclude(s => s.Guardian)
+                    .ThenInclude(s => s!.Guardian)
                 .Include(r => r.StudentClass)
                 .AsQueryable();
 
@@ -57,16 +57,30 @@ namespace EduGestor.Services
                 query = query.Where(r => r.StudentClassId == filters.StudentClassId);
             }
 
-            return await query
+            // TOTAL ITEMS
+            var totalItems = await query.CountAsync();
+
+            // PAGINATION
+            var regs = await query
                 .OrderByDescending(r => r.CreatedAt)
+                .Skip((filters.PageNumber - 1) * filters.PageSize)
+                .Take(filters.PageSize)
                 .ToListAsync();
+
+            filters.Registrations = regs;
+
+            filters.TotalPages =
+                (int)Math.Ceiling(
+                    totalItems / (double)filters.PageSize);
+
+            return filters;
         }
 
         public async Task<List<Registration>> FindAllAsync()
         {
             return await _context.Registrations
                 .Include(r => r.Student)
-                    .ThenInclude(s => s.Guardian)
+                    .ThenInclude(s => s!.Guardian)
                 .Include(r => r.StudentClass)
                 .OrderByDescending(r => r.CreatedAt)
                 .ToListAsync();
@@ -81,11 +95,11 @@ namespace EduGestor.Services
 
                 .Include(r => r.Grades)
                     .ThenInclude(g => g.DisciplineClass)
-                        .ThenInclude(dc => dc.Discipline)
+                        .ThenInclude(dc => dc!.Discipline)
 
                 .Include(r => r.Grades)
                     .ThenInclude(g => g.DisciplineClass)
-                        .ThenInclude(dc => dc.Teacher)
+                        .ThenInclude(dc => dc!.Teacher)
 
                 .FirstOrDefaultAsync(r => r.Id == id);
         }

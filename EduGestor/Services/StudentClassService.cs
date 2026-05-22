@@ -27,7 +27,7 @@ namespace EduGestor.Services
                 .ToListAsync();
         }
 
-        public async Task<List<StudentClass>> FindAllSearchAsync(StudentClassSearchViewModel filters)
+        public async Task<StudentClassSearchViewModel> FindAllSearchAsync(StudentClassSearchViewModel filters)
         {
             var query = _context.StudentClasses
                 .Include(sc => sc.Registrations)
@@ -60,9 +60,23 @@ namespace EduGestor.Services
                 );
             }
 
-            return await query
-                .OrderBy(sc => sc.Level)
+            // TOTAL ITEMS
+            var totalItems = await query.CountAsync();
+
+            // PAGINATION
+            var scItems = await query
+                .OrderByDescending(sc => sc.Level)
+                .Skip((filters.PageNumber - 1) * filters.PageSize)
+                .Take(filters.PageSize)
                 .ToListAsync();
+
+            filters.StudentClasses = scItems;
+
+            filters.TotalPages =
+                (int)Math.Ceiling(
+                    totalItems / (double)filters.PageSize);
+
+            return filters;
         }
 
         public async Task<StudentClass?> FindByIdAsync(Guid id)

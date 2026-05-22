@@ -185,7 +185,7 @@
                     </tr>
                 }
 
-                @foreach (var reg in Model.Registrations)
+                @foreach (var reg in Model.Registrations!)
                 {
                     <tr>
 
@@ -276,3 +276,78 @@
     </div>
 
 </div>
+
+<!-- PAGINATION -->
+@if (Model.TotalPages > 1)
+{
+    <nav class="mt-4">
+
+        <ul class="pagination justify-content-center">
+
+            <!-- PREVIOUS -->
+            <li class="page-item
+                @(Model.PageNumber == 1 ? "disabled" : "")">
+
+                <a class="page-link"
+                   asp-action="Index"
+                   asp-route-PageNumber="@(Model.PageNumber - 1)"
+
+                   asp-route-StudentName="@Model.StudentName"
+                   asp-route-Status="@Model.Status"
+                   asp-route-StartDate="@Model.StartDate?.ToString("yyyy-MM-dd")"
+                   asp-route-EndDate="@Model.EndDate?.ToString("yyyy-MM-dd")"
+                   asp-route-StudentClassId="@Model.StudentClassId">
+
+                    Previous
+
+                </a>
+
+            </li>
+
+            @for (int i = 1; i <= Model.TotalPages; i++)
+            {
+                <li class="page-item
+                    @(i == Model.PageNumber ? "active" : "")">
+
+                    <a class="page-link"
+                       asp-action="Index"
+                       asp-route-PageNumber="@i"
+
+                       asp-route-StudentName="@Model.StudentName"
+                       asp-route-Status="@Model.Status"
+                       asp-route-StartDate="@Model.StartDate?.ToString("yyyy-MM-dd")"
+                       asp-route-EndDate="@Model.EndDate?.ToString("yyyy-MM-dd")"
+                       asp-route-StudentClassId="@Model.StudentClassId">
+
+                        @i
+
+                    </a>
+
+                </li>
+            }
+
+            <!-- NEXT -->
+            <li class="page-item
+                @(Model.PageNumber == Model.TotalPages
+                    ? "disabled" : "")">
+
+                <a class="page-link"
+                   asp-action="Index"
+                   asp-route-PageNumber="@(Model.PageNumber + 1)"
+
+                   asp-route-StudentName="@Model.StudentName"
+                   asp-route-Status="@Model.Status"
+                   asp-route-StartDate="@Model.StartDate?.ToString("yyyy-MM-dd")"
+                   asp-route-EndDate="@Model.EndDate?.ToString("yyyy-MM-dd")"
+                   asp-route-StudentClassId="@Model.StudentClassId">
+
+                    Next
+
+                </a>
+
+            </li>
+
+        </ul>
+
+    </nav>
+}

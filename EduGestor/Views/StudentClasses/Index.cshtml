@@ -246,3 +246,81 @@
     </div>
 
 </div>
+
+<!-- PAGINATION -->
+@if (Model.TotalPages > 1)
+{
+    <nav class="mt-4">
+
+        <ul class="pagination justify-content-center">
+
+            <!-- PREVIOUS -->
+            <li class="page-item
+                @(Model.PageNumber == 1 ? "disabled" : "")">
+
+                <a class="page-link"
+                   asp-action="Index"
+                   asp-route-PageNumber="@(Model.PageNumber - 1)"
+                   asp-route-ClassCode="@Model.ClassCode"
+                   asp-route-EduLevel="@Model.EduLevel"
+                   asp-route-StudentSeries="@Model.StudentSeries"
+                   asp-route-ClassShift="@Model.ClassShift"
+                   asp-route-StudentClass="@Model.StudentClass">
+
+                    Previous
+
+                </a>
+
+            </li>
+
+            @for (int i = 1; i <= Model.TotalPages; i++)
+            {
+                <li class="page-item
+                    @(i == Model.PageNumber ? "active" : "")">
+
+                    <a class="page-link"
+                       asp-action="Index"
+                       asp-route-PageNumber="@i"
+                       asp-route-ClassCode="@Model.ClassCode"
+                       asp-route-EduLevel="@Model.EduLevel"
+                       asp-route-StudentSeries="@Model.StudentSeries"
+                       asp-route-ClassShift="@Model.ClassShift"
+                       asp-route-StudentClass="@Model.StudentClass">
+
+                        @i
+
+                    </a>
+
+                </li>
+            }
+
+            <!-- NEXT -->
+            <li class="page-item
+                @(Model.PageNumber == Model.TotalPages
+                    ? "disabled" : "")">
+
+                <a class="page-link"
+                   asp-action="Index"
+                   asp-route-PageNumber="@(Model.PageNumber + 1)"
+                   asp-route-ClassCode="@Model.ClassCode"
+                   asp-route-EduLevel="@Model.EduLevel"
+                   asp-route-StudentSeries="@Model.StudentSeries"
+                   asp-route-ClassShift="@Model.ClassShift"
+                   asp-route-StudentClass="@Model.StudentClass">
+
+                    Next
+
+                </a>
+
+            </li>
+
+        </ul>
+
+    </nav>
+}
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}
