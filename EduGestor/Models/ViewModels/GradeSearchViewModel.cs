@@ -19,8 +19,13 @@
         public int? Bimester { get; set; }
         public int? SchoolYear { get; set; }
 
+        public int PageNumber { get; set; } = 1;
+
+        public int PageSize { get; set; } = 4;
+
+        public int TotalPages { get; set; }
+
         // Resultado
-        public List<Grade> Grades { get; set; }
-            = new();
+        public IEnumerable<Grade> Grades { get; set; } = new List<Grade>();
     }
 }
