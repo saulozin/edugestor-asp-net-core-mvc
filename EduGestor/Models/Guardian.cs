@@ -1,4 +1,5 @@
 ﻿using EduGestor.Attributes;
+using EduGestor.Models.Identity;
 using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -11,6 +12,10 @@ namespace EduGestor.Models
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public Guid Id { get; set; }
+
+        public string? UserId { get; set; }
+
+        public AppUser? User { get; set; }
 
         [Required(ErrorMessage = "{0} required")]
         [StringLength(150, MinimumLength = 3, ErrorMessage = "{0} size should be between {2} and {1}")]

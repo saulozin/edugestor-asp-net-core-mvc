@@ -1,4 +1,5 @@
 ﻿using EduGestor.Models.Enums;
+using EduGestor.Models.Identity;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -23,6 +24,7 @@ namespace EduGestor.Models
         [Required(ErrorMessage = "Student is required")]
         [Display(Name = "Student")]
         public Guid StudentId { get; set; }
+
         public Student? Student { get; set; }
 
         [Required(ErrorMessage = "Student Class is required")]

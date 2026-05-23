@@ -1,0 +1,165 @@
+﻿@model EduGestor.Models.ViewModels.Portal.GuardianPortalViewModel
+
+@{
+    ViewData["Title"] = "Guardian Portal";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+
+    <div>
+
+        <h2 class="fw-bold mb-1">
+
+            Guardian Portal
+
+        </h2>
+
+        <p class="text-muted mb-0">
+
+            Welcome,
+            @Model.Guardian?.Name
+
+        </p>
+
+    </div>
+
+</div>
+
+<!-- STUDENTS -->
+<div class="card border-0 shadow-sm rounded-4 mb-4">
+
+    <div class="card-body">
+
+        <h5 class="fw-bold mb-3">
+
+            My Children
+
+        </h5>
+
+        <div class="row g-3">
+
+            @foreach (var student in Model.Students)
+            {
+                <div class="col-md-4">
+
+                    <div class="border rounded-4 p-3 h-100">
+
+                        <h6 class="fw-bold">
+
+                            @student.Name
+
+                        </h6>
+
+                        <p class="text-muted mb-0">
+
+                            Birth:
+                            @student.BirthDate.ToString("dd/MM/yyyy")
+
+                        </p>
+
+                    </div>
+
+                </div>
+            }
+
+        </div>
+
+    </div>
+
+</div>
+
+<!-- GRADES -->
+<div class="card border-0 shadow-sm rounded-4">
+
+    <div class="card-body">
+
+        <h5 class="fw-bold mb-3">
+
+            Grades
+
+        </h5>
+
+        <div class="table-responsive">
+
+            <table class="table table-hover align-middle">
+
+                <thead class="table-light">
+
+                    <tr>
+
+                        <th>Student</th>
+                        <th>Discipline</th>
+                        <th>Grade</th>
+                        <th>Frequency</th>
+                        <th>Status</th>
+
+                    </tr>
+
+                </thead>
+
+                <tbody>
+
+                    @foreach (var grade in Model.Grades)
+                    {
+                        <tr>
+
+                            <td>
+
+                                @grade.Registration?.Student?.Name
+
+                            </td>
+
+                            <td>
+
+                                @grade.DisciplineClass?
+                                .Discipline?
+                                .Name
+
+                            </td>
+
+                            <td>
+
+                                @grade.StudentGrade
+
+                            </td>
+
+                            <td>
+
+                                @grade.Frequency%
+
+                            </td>
+
+                            <td>
+
+                                @if (grade.StudentGrade >= 7
+                               && grade.Frequency >= 75)
+                                {
+                                    <span class="badge bg-success">
+
+                                        Approved
+
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-danger">
+
+                                        Failed
+
+                                    </span>
+                                }
+
+                            </td>
+
+                        </tr>
+                    }
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+</div>

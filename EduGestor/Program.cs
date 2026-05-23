@@ -19,8 +19,8 @@ builder.Services
         // PASSWORD
         options.Password.RequireDigit = true;
         options.Password.RequiredLength = 6;
-        options.Password.RequireUppercase = false;
-        options.Password.RequireLowercase = false;
+        options.Password.RequireUppercase = true;
+        options.Password.RequireLowercase = true;
         options.Password.RequireNonAlphanumeric = false;
 
         // USER
@@ -50,6 +50,7 @@ builder.Services.AddScoped<DisciplineService>();
 builder.Services.AddScoped<GradeService>();
 builder.Services.AddScoped<DisciplineClassService>();
 builder.Services.AddScoped<ValidateExtensions>();
+builder.Services.AddScoped<PortalService>();
 
 var app = builder.Build();
 
@@ -73,7 +74,7 @@ app.MapStaticAssets();
 
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}")
+    pattern: "{controller=HomeRedirect}/{action=Index}/{id?}")
     .WithStaticAssets();
 
 await SeedRolesAsync(app);

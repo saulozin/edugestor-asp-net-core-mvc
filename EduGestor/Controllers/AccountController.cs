@@ -3,6 +3,8 @@ using EduGestor.Models.ViewModels.Auth;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using EduGestor.Data;
+using Microsoft.EntityFrameworkCore;
 
 namespace EduGestor.Controllers
 {
@@ -13,26 +15,32 @@ namespace EduGestor.Controllers
 
         private readonly SignInManager<AppUser> _signInManager;
 
+        private readonly EduGestorContext _context;
+
         public AccountController(
             UserManager<AppUser> userManager,
-            SignInManager<AppUser> signInManager)
+            SignInManager<AppUser> signInManager,
+            EduGestorContext context)
         {
             _userManager = userManager;
 
             _signInManager = signInManager;
+
+            _context = context;
         }
 
         // =========================
         // REGISTER
         // =========================
 
-        [AllowAnonymous]
+        [Authorize(Roles = "Admin")]
         public IActionResult Register()
         {
             return View();
         }
 
         [HttpPost]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Register(
             RegisterViewModel model)
         {
@@ -67,11 +75,28 @@ namespace EduGestor.Controllers
 
             if (result.Succeeded)
             {
-                await _userManager.AddToRoleAsync(user, model.Role);
-
-                await _signInManager.SignInAsync(
+                // ADD ROLE
+                await _userManager.AddToRoleAsync(
                     user,
-                    isPersistent: false);
+                    model.Role);
+
+                // LINK GUARDIAN
+                if (model.Role == "Guardian")
+                {
+                    var guardian =
+                        await _context.Guardians
+                            .FirstOrDefaultAsync(g =>
+                                g.Email == model.Email);
+
+                    if (guardian != null)
+                    {
+                        guardian.UserId = user.Id;
+
+                        await _context.SaveChangesAsync();
+                    }
+                }
+
+                TempData["Success"] = "User created successfully.";
 
                 return RedirectToAction(
                     "Index",
@@ -116,6 +141,21 @@ namespace EduGestor.Controllers
 
             if (result.Succeeded)
             {
+                var user =
+                    await _userManager.FindByEmailAsync(model.Email);
+
+                // GUARDIAN
+                if (user != null &&
+                    await _userManager.IsInRoleAsync(
+                        user,
+                        "Guardian"))
+                {
+                    return RedirectToAction(
+                        "Index",
+                        "Portal");
+                }
+
+                // ADMIN AREA
                 return RedirectToAction(
                     "Index",
                     "Home");

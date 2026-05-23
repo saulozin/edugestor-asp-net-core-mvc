@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
 namespace EduGestor.Controllers
 {
-    [Authorize]
+    [Authorize(Roles = "Admin,Secretary,Teacher")]
     public class HomeController : Controller
     {
         private readonly DashboardService _dashboardService;

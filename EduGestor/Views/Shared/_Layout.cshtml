@@ -119,13 +119,16 @@
             </div>
 
             <!-- DASHBOARD -->
-            <a asp-controller="Home"
-               asp-action="Index">
+            @if (!User.IsInRole("Guardian"))
+            {
+                <a asp-controller="Home"
+                   asp-action="Index">
 
-                <i class="bi bi-speedometer2"></i>
-                Dashboard
+                    <i class="bi bi-speedometer2"></i>
+                    Dashboard
 
-            </a>
+                </a>
+            }
 
             <!-- ADMIN + SECRETARY -->
             @if (User.IsInRole("Admin") ||
@@ -201,6 +204,18 @@
 
                     <i class="bi bi-bar-chart"></i>
                     Grades
+
+                </a>
+            }
+
+            <!-- USERS -->
+            @if (User.IsInRole("Admin"))
+            {
+                <a asp-controller="Account"
+                   asp-action="Register">
+
+                    <i class="bi bi-person-plus"></i>
+                    Users
 
                 </a>
             }

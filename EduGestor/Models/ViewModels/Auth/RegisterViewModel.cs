@@ -24,6 +24,7 @@ namespace EduGestor.Models.ViewModels.Auth
         public string ConfirmPassword { get; set; } = string.Empty;
 
         [Required]
+        [Display(Name = "Role")]
         public string Role { get; set; } = string.Empty;
     }
 }
