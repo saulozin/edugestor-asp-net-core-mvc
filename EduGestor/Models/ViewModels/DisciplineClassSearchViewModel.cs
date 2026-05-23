@@ -11,6 +11,12 @@
 
         public string? TeacherName { get; set; }
 
-        public ICollection<DisciplineClass> DisciplineClasses { get; set; } = new List<DisciplineClass>();
+        public int PageNumber { get; set; } = 1;
+
+        public int PageSize { get; set; } = 5;
+
+        public int TotalPages { get; set; }
+
+        public IEnumerable<DisciplineClass> DisciplineClasses { get; set; } = new List<DisciplineClass>();
     }
 }

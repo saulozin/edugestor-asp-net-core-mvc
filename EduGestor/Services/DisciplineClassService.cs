@@ -28,7 +28,7 @@ namespace EduGestor.Services
                 .ToListAsync();
         }
 
-        public async Task<List<DisciplineClass>> FindAllSearchAsync(DisciplineClassSearchViewModel filters)
+        public async Task<DisciplineClassSearchViewModel> FindAllSearchAsync(DisciplineClassSearchViewModel filters)
         {
             var query = _context.DisciplineClasses
                 .Include(dc => dc.StudentClass)
@@ -49,9 +49,23 @@ namespace EduGestor.Services
                 );
             }
 
-            return await query
+            // TOTAL ITEMS
+            var totalItems = await query.CountAsync();
+
+            // PAGINATION
+            var discClasses = await query
                 .OrderBy(dc => dc.StudentClass!.Code)
+                .Skip((filters.PageNumber - 1) * filters.PageSize)
+                .Take(filters.PageSize)
                 .ToListAsync();
+
+            filters.DisciplineClasses = discClasses;
+
+            filters.TotalPages =
+                (int)Math.Ceiling(
+                    totalItems / (double)filters.PageSize);
+
+            return filters;
         }
 
         // =========================

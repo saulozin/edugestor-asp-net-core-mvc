@@ -19,13 +19,12 @@ namespace EduGestor.Controllers
         // =======================
         // INDEX
         // =======================
-        public async Task<IActionResult> Index(string? searchString)
+        public async Task<IActionResult> Index(PagedViewModel<Discipline> filters)
         {
-            ViewData["CurrentFilter"] = searchString;
 
-            var disc = await _disciplineService.FindAllSearchAsync(searchString);
+            var vm = await _disciplineService.FindAllSearchAsync(filters);
 
-            return View(disc);
+            return View(vm);
         }
 
         // =========================

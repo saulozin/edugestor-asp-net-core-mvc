@@ -1,6 +1,7 @@
 ﻿using EduGestor.Data;
 using EduGestor.Extensions;
 using EduGestor.Models;
+using EduGestor.Models.ViewModels;
 using EduGestor.Services.Exceptions;
 using Microsoft.EntityFrameworkCore;
 using System.ComponentModel;
@@ -23,26 +24,40 @@ namespace EduGestor.Services
                 .ToListAsync();
         }
 
-        public async Task<List<Discipline>> FindAllSearchAsync(string? searchString)
+        public async Task<PagedViewModel<Discipline>> FindAllSearchAsync(PagedViewModel<Discipline> filters)
         {
             var query = _context.Disciplines
                 .Include(d => d.DisciplineClasses)
                 .Include(d => d.Grades)
                 .AsQueryable();
 
-            if (!string.IsNullOrWhiteSpace(searchString))
+            if (!string.IsNullOrWhiteSpace(filters.SearchTerm))
             {
-                searchString = searchString.Trim();
+                filters.SearchTerm = filters.SearchTerm.Trim();
 
                 query = query.Where(d =>
                     // Nome (case insensitive)
-                    EF.Functions.ILike(d.Name, $"%{searchString}%")
+                    EF.Functions.ILike(d.Name, $"%{filters.SearchTerm}%")
                 );
             }
 
-            return await query
+            // TOTAL ITEMS
+            var totalItems = await query.CountAsync();
+
+            // PAGINATION
+            var disciplines = await query
                 .OrderBy(d => d.Name)
+                .Skip((filters.PageNumber - 1) * filters.PageSize)
+                .Take(filters.PageSize)
                 .ToListAsync();
+
+            filters.Items = disciplines;
+
+            filters.TotalPages =
+                (int)Math.Ceiling(
+                    totalItems / (double)filters.PageSize);
+
+            return filters;
         }
 
         public async Task<Discipline?> FindByIdAsync(Guid id)
