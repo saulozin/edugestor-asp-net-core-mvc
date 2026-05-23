@@ -1,11 +1,13 @@
 ﻿using EduGestor.Models.ViewModels;
 using EduGestor.Services;
 using EduGestor.Services.Exceptions;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
 
 namespace EduGestor.Controllers
 {
+    [Authorize(Roles = "Admin,Secretary")]
     public class RegistrationsController : Controller
     {
         private readonly RegistrationService _registrationService;

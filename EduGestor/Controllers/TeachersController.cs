@@ -3,13 +3,14 @@ using EduGestor.Models.ViewModels;
 using EduGestor.Services;
 using EduGestor.Services.Exceptions;
 using EduGestor.ViewModels;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using System.Diagnostics;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace EduGestor.Controllers
 {
+    [Authorize(Roles = "Admin,Secretary")]
     public class TeachersController : Controller
     {
         private readonly TeacherService _teacherService;

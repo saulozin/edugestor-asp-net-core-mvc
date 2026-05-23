@@ -1,9 +1,11 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using EduGestor.Models;
+using EduGestor.Models.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 
 namespace EduGestor.Data
 {
-    public class EduGestorContext : DbContext
+    public class EduGestorContext : IdentityDbContext<AppUser>
     {
         public EduGestorContext(DbContextOptions<EduGestorContext> options)
             : base(options)

@@ -6,9 +6,11 @@ using EduGestor.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using System.Diagnostics;
+using Microsoft.AspNetCore.Authorization;
 
 namespace EduGestor.Controllers
 {
+    [Authorize(Roles = "Admin,Secretary")]
     public class StudentsController : Controller
     {
         private readonly StudentService _studentService;

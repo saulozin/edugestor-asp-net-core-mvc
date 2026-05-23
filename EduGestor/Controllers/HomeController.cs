@@ -1,10 +1,11 @@
 using EduGestor.Models.ViewModels;
+using EduGestor.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
-
-using EduGestor.Services;
 namespace EduGestor.Controllers
 {
+    [Authorize]
     public class HomeController : Controller
     {
         private readonly DashboardService _dashboardService;

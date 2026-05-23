@@ -1,13 +1,15 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using EduGestor.Models;
+﻿using EduGestor.Models;
 using EduGestor.Models.ViewModels;
 using EduGestor.Services;
 using EduGestor.Services.Exceptions;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using System.Diagnostics;
 
 namespace EduGestor.Controllers
 {
+    [Authorize(Roles = "Admin,Secretary")]
     public class DisciplineClassesController : Controller
     {
         private readonly DisciplineClassService _disciplineClassService;
