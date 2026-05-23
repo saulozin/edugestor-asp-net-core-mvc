@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using EduGestor.Attributes;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace EduGestor.Models
@@ -15,6 +16,7 @@ namespace EduGestor.Models
         public string Name { get; set; }
 
         [Required]
+        [CpfValidation]
         [StringLength(11, ErrorMessage = "{0} size should be {1}")]
         public string Cpf { get; set; }
 
