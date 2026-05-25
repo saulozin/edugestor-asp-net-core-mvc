@@ -13,9 +13,7 @@
         <div class="col-12">
 
             <div class="p-4 rounded-4 shadow-sm text-white"
-                 style="
-                background: linear-gradient(135deg, #2563eb, #1e40af);
-                ">
+                 style="background: linear-gradient(135deg, #2563eb, #1e40af);" >
 
                 <div class="d-flex justify-content-between align-items-center">
 
@@ -184,6 +182,92 @@
                                style="font-size: 32px;"></i>
 
                         </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- ANALYTICS -->
+    <div class="row g-4 mb-4">
+
+        <!-- SCHOOL AVERAGE -->
+        <div class="col-md-4">
+
+            <div class="card border-0 shadow-sm rounded-4 h-100">
+
+                <div class="card-body">
+
+                    <p class="text-muted mb-1">
+                        School Average
+                    </p>
+
+                    <h2 class="fw-bold text-primary">
+
+                        @Model.SchoolAverage.ToString("F1")
+
+                    </h2>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- FREQUENCY -->
+        <div class="col-md-4">
+
+            <div class="card border-0 shadow-sm rounded-4 h-100">
+
+                <div class="card-body">
+
+                    <p class="text-muted mb-1">
+                        Average Frequency
+                    </p>
+
+                    <h2 class="fw-bold text-success">
+
+                        @Model.AverageFrequency.ToString("F0")%
+
+                    </h2>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- APPROVAL -->
+        <div class="col-md-4">
+
+            <div class="card border-0 shadow-sm rounded-4 h-100">
+
+                <div class="card-body">
+
+                    <p class="text-muted mb-3">
+                        Academic Status
+                    </p>
+
+                    <div class="d-flex gap-3">
+
+                        <span class="badge bg-success fs-6">
+
+                            Approved:
+                            @Model.ApprovedStudents
+
+                        </span>
+
+                        <span class="badge bg-danger fs-6">
+
+                            Failed:
+                            @Model.FailedStudents
+
+                        </span>
 
                     </div>
 
@@ -404,4 +488,153 @@
 
     </div>
 
+    <!-- CHARTS -->
+    <div class="container-fluid mt-4">
+
+        <div class="row g-4">
+
+            <!-- APPROVAL CHART -->
+            <div class="col-xl-4">
+
+                <div class="card border-0 shadow-sm rounded-4 h-100">
+
+                    <div class="card-body">
+
+                        <h5 class="fw-bold mb-4">
+                            Approval Statistics
+                        </h5>
+
+                        <div style="height: 320px;">
+
+                            <canvas id="approvalChart"></canvas>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!-- PERFORMANCE -->
+            <div class="col-xl-8">
+
+                <div class="card border-0 shadow-sm rounded-4 h-100">
+
+                    <div class="card-body">
+
+                        <h5 class="fw-bold mb-4">
+                            School Performance
+                        </h5>
+
+                        <div style="height: 320px;">
+
+                            <canvas id="performanceChart"></canvas>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
 </div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+@section Scripts {
+
+    <script>
+
+        // =========================
+        // APPROVAL CHART
+        // =========================
+
+        new Chart(
+        document.getElementById('approvalChart'),
+        {
+        type: 'doughnut',
+
+        data:
+        {
+        labels:
+        [
+        'Approved',
+        'Failed'
+        ],
+
+        datasets:
+        [
+        {
+        data:
+        [
+        @Model.ApprovedStudents,
+        @Model.FailedStudents
+        ]
+        }
+        ]
+        },
+
+        options:
+        {
+        responsive: true
+        }
+        });
+
+        // =========================
+        // PERFORMANCE CHART
+        // =========================
+
+        new Chart(
+            document.getElementById('performanceChart'),
+            {
+                type: 'bar',
+
+                data:
+                {
+                    labels:
+                    [
+                        'School Average',
+                        'Frequency'
+                    ],
+
+                    datasets:
+                    [
+                        {
+                            label: 'Metrics',
+
+                            data:
+                            [
+                                @Model.SchoolAverage,
+                                @Model.AverageFrequency
+                            ]
+                        }
+                    ]
+                },
+
+                options:
+                {
+                    responsive: true,
+
+                    scales:
+                    {
+                        y:
+                        {
+                            beginAtZero: true,
+                            max: 100
+                        }
+                    }
+                }
+            });
+
+    </script>
+
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

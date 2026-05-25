@@ -16,6 +16,16 @@ namespace EduGestor.ViewModels
 
         public int SchoolYear { get; set; } = DateTime.Now.Year;
 
+        //-------------------------------------------------------------------------------------------------
+        public decimal SchoolAverage { get; set; }
+
+        public decimal AverageFrequency { get; set; }
+
+        public int ApprovedStudents { get; set; }
+
+        public int FailedStudents { get; set; }
+        //-------------------------------------------------------------------------------------------------
+
         public ICollection<Student> RecentStudents { get; set; } = new List<Student>();
 
         public ICollection<Registration> RecentRegistrations { get; set; } = new List<Registration>();
