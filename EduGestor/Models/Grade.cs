@@ -40,5 +40,6 @@ namespace EduGestor.Models
         public Grade()
         {
         }
+
     }
 }

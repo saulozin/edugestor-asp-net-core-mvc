@@ -1,10 +1,6 @@
 ﻿using EduGestor.Data;
-using EduGestor.Models;
-using EduGestor.Models.Identity;
 using EduGestor.Models.ViewModels.Portal;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using System.Security.Claims;
 
 namespace EduGestor.Services
 {
@@ -12,68 +8,86 @@ namespace EduGestor.Services
     {
         private readonly EduGestorContext _context;
 
-        private readonly UserManager<AppUser> _userManager;
-
-        public PortalService(
-            EduGestorContext context,
-            UserManager<AppUser> userManager)
+        public PortalService(EduGestorContext context)
         {
             _context = context;
-
-            _userManager = userManager;
         }
 
-        public async Task<GuardianPortalViewModel>
-            GetGuardianPortalAsync(
-                ClaimsPrincipal userPrincipal)
+        public async Task<PortalViewModel?> GetPortalDataAsync(
+            string email)
         {
-            var userId =
-                _userManager.GetUserId(userPrincipal);
-
             var guardian = await _context.Guardians
                 .Include(g => g.Students)
                     .ThenInclude(s => s.Registrations)
-                .FirstOrDefaultAsync(g =>
-                    g.UserId == userId);
+                        .ThenInclude(r => r.StudentClass)
+
+                .Include(g => g.Students)
+                    .ThenInclude(s => s.Registrations)
+                        .ThenInclude(r => r.Grades)
+                            .ThenInclude(g => g.DisciplineClass)
+                                .ThenInclude(dc => dc!.Discipline)
+
+                .FirstOrDefaultAsync(g => g.Email == email);
 
             if (guardian == null)
             {
-                return new GuardianPortalViewModel();
+                return null;
             }
 
-            var studentIds =
-                guardian.Students
-                    .Select(s => s.Id)
-                    .ToList();
-
-            var registrations =
-                await _context.Registrations
-                    .Include(r => r.StudentClass)
-                    .Where(r =>
-                        studentIds.Contains(r.StudentId))
-                    .ToListAsync();
-
-            var grades =
-                await _context.Grades
-                    .Include(g => g.Registration)
-                        .ThenInclude(r => r!.Student)
-                    .Include(g => g.DisciplineClass)
-                        .ThenInclude(dc => dc!.Discipline)
-                    .Where(g =>
-                        studentIds.Contains(
-                            g.Registration!.StudentId))
-                    .ToListAsync();
-
-            return new GuardianPortalViewModel
+            var vm = new PortalViewModel
             {
-                Guardian = guardian,
-
-                Students = guardian.Students.ToList(),
-
-                Registrations = registrations,
-
-                Grades = grades
+                GuardianName = guardian.Name
             };
+
+            foreach (var student in guardian.Students)
+            {
+                var registration =
+                    student.Registrations
+                        .OrderByDescending(r => r.CreatedAt)
+                        .FirstOrDefault();
+
+                if (registration == null)
+                    continue;
+
+                var studentVm =
+                    new PortalStudentViewModel
+                    {
+                        StudentId = student.Id,
+
+                        StudentName = student.Name,
+
+                        ClassCode =
+                            registration.StudentClass?.Code
+                            ?? "-",
+
+                        GuardianName = guardian.Name
+                    };
+
+                foreach (var grade in registration.Grades)
+                {
+                    studentVm.Grades.Add(
+                        new PortalGradeViewModel
+                        {
+                            Discipline =
+                                grade.DisciplineClass?
+                                    .Discipline?.Name ?? "-",
+
+                            Grade = grade.StudentGrade,
+
+                            Frequency = grade.Frequency,
+
+                            Bimester = grade.Bimester,
+
+                            Approved =
+                                grade.StudentGrade >= 7 &&
+                                grade.Frequency >= 75
+                        });
+                }
+
+                vm.Students.Add(studentVm);
+            }
+
+            return vm;
         }
     }
 }
