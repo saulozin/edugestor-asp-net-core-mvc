@@ -49,19 +49,19 @@ namespace EduGestor.Services
                 if (registration == null)
                     continue;
 
-                var studentVm =
-                    new PortalStudentViewModel
-                    {
-                        StudentId = student.Id,
+                var studentVm = new PortalStudentViewModel
+                {
+                    RegistrationId = registration.Id,
 
-                        StudentName = student.Name,
+                    StudentId = student.Id,
 
-                        ClassCode =
-                            registration.StudentClass?.Code
-                            ?? "-",
+                    StudentName = student.Name,
 
-                        GuardianName = guardian.Name
-                    };
+                    ClassCode =
+                        registration.StudentClass?.Code ?? "-",
+
+                     GuardianName = guardian.Name
+                };
 
                 foreach (var grade in registration.Grades)
                 {
@@ -79,8 +79,8 @@ namespace EduGestor.Services
                             Bimester = grade.Bimester,
 
                             Approved =
-                                grade.StudentGrade >= 7 &&
-                                grade.Frequency >= 75
+                                grade.StudentGrade >= 6m &&
+                                grade.Frequency >= 75m
                         });
                 }
 

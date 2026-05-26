@@ -4,6 +4,8 @@
     {
         public Guid StudentId { get; set; }
 
+        public Guid RegistrationId { get; set; }
+
         public string StudentName { get; set; } = string.Empty;
 
         public string ClassCode { get; set; } = string.Empty;

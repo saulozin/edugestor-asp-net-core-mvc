@@ -4,11 +4,14 @@ using EduGestor.Services;
 using Microsoft.EntityFrameworkCore;
 using EduGestor.Models.Identity;
 using Microsoft.AspNetCore.Identity;
+using QuestPDF.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<EduGestorContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("EduGestorContext")
     ?? throw new InvalidOperationException("Connection string 'EduGestorContext' not found.")));
+
+QuestPDF.Settings.License = LicenseType.Community;
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
@@ -51,6 +54,7 @@ builder.Services.AddScoped<GradeService>();
 builder.Services.AddScoped<DisciplineClassService>();
 builder.Services.AddScoped<ValidateExtensions>();
 builder.Services.AddScoped<PortalService>();
+builder.Services.AddScoped<ReportService>();
 
 var app = builder.Build();
 
