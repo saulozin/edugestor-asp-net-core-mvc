@@ -247,5 +247,151 @@ namespace EduGestor.Services
 
             return vm;
         }
+
+        public async Task<GradeLaunchViewModel?> GetLaunchGradesDataAsync(Guid disciplineClassId, int bimester)
+        {
+            var disciplineClass =
+                await _context.DisciplineClasses
+
+                    .Include(dc => dc.Discipline)
+
+                    .Include(dc => dc.StudentClass)
+                        .ThenInclude(sc => sc.Registrations)
+                            .ThenInclude(r => r.Student)
+
+                    .Include(dc => dc.Grades)
+
+                    .FirstOrDefaultAsync(dc =>
+                        dc.Id == disciplineClassId);
+
+            if (disciplineClass == null)
+            {
+                return null;
+            }
+
+            var vm =
+                new GradeLaunchViewModel
+                {
+                    DisciplineClassId =
+                        disciplineClass.Id,
+
+                    Discipline =
+                        disciplineClass
+                            .Discipline?.Name ?? "-",
+
+                    ClassCode =
+                        disciplineClass
+                            .StudentClass?.Code ?? "-",
+
+                    Bimester = bimester
+                };
+
+            var registrations =
+                disciplineClass
+                    .StudentClass?
+                    .Registrations
+                    ?.ToList()
+
+                ?? new List<Registration>();
+
+            foreach (var registration in registrations)
+            {
+                // procura nota já existente
+                var existingGrade =
+                    disciplineClass.Grades
+                        .FirstOrDefault(g =>
+                            g.RegistrationId ==
+                                registration.Id
+                            &&
+                            g.Bimester == bimester);
+
+                vm.Students.Add(
+                    new GradeLaunchRowViewModel
+                    {
+                        RegistrationId =
+                            registration.Id,
+
+                        StudentName =
+                            registration.Student?.Name
+                            ?? "-",
+
+                        Grade =
+                            existingGrade?.StudentGrade
+                            ?? 0,
+
+                        Frequency =
+                            existingGrade?.Frequency
+                            ?? 0
+                    });
+            }
+
+            return vm;
+        }
+
+        public async Task SaveLaunchGradesAsync(GradeLaunchViewModel vm)
+        {
+            foreach (var student in vm.Students)
+            {
+                var existingGrade =
+                    await _context.Grades
+                        .FirstOrDefaultAsync(g =>
+
+                            g.RegistrationId ==
+                                student.RegistrationId
+
+                            &&
+
+                            g.DisciplineClassId ==
+                                vm.DisciplineClassId
+
+                            &&
+
+                            g.Bimester ==
+                                vm.Bimester);
+
+                // =========================================
+                // UPDATE
+                // =========================================
+
+                if (existingGrade != null)
+                {
+                    existingGrade.StudentGrade =
+                        student.Grade;
+
+                    existingGrade.Frequency =
+                        student.Frequency;
+
+                    continue;
+                }
+
+                // =========================================
+                // CREATE
+                // =========================================
+
+                var grade =
+                    new Grade
+                    {
+                        RegistrationId =
+                            student.RegistrationId,
+
+                        DisciplineClassId =
+                            vm.DisciplineClassId,
+
+                        StudentGrade =
+                            student.Grade,
+
+                        Frequency =
+                            student.Frequency,
+
+                        Bimester =
+                            vm.Bimester
+                    };
+
+                _context.Grades.Add(grade);
+            }
+
+            await _context.SaveChangesAsync();
+        }
+
     }
 }

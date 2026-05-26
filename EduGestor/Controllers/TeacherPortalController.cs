@@ -1,4 +1,5 @@
-﻿using EduGestor.Services;
+﻿using EduGestor.Models.ViewModels;
+using EduGestor.Services;
 using EduGestor.Services.Exceptions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -15,6 +16,9 @@ namespace EduGestor.Controllers
             _teacherPortalService = teacherPortalService;
         }
 
+        // =========================================
+        // DASHBOARD
+        // =========================================
         public async Task<IActionResult> Index()
         {
             var email = User.Identity?.Name;
@@ -39,6 +43,9 @@ namespace EduGestor.Controllers
             return View(vm);
         }
 
+        // =========================================
+        // VIEW CLASS
+        // =========================================
         public async Task<IActionResult> Details(Guid disciplineClassId)
         {
             var vm =
@@ -52,6 +59,53 @@ namespace EduGestor.Controllers
             }
 
             return View(vm);
+        }
+
+        // =========================================
+        // LAUNCH GRADES - GET
+        // =========================================
+
+        public async Task<IActionResult> LaunchGrades(
+            Guid disciplineClassId,
+            int bimester = 1)
+        {
+            var vm =
+                await _teacherPortalService
+                    .GetLaunchGradesDataAsync(
+                        disciplineClassId,
+                        bimester);
+
+            if (vm == null)
+            {
+                throw new NotFoundException(
+                    "Class not found.");
+            }
+
+            return View(vm);
+        }
+
+        // =========================================
+        // LAUNCH GRADES - POST
+        // =========================================
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> LaunchGrades(GradeLaunchViewModel vm)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(vm);
+            }
+
+            await _teacherPortalService
+                .SaveLaunchGradesAsync(vm);
+
+            return RedirectToAction(
+                nameof(Details),
+                new
+                {
+                    disciplineClassId = vm.DisciplineClassId
+                });
         }
     }
 }
