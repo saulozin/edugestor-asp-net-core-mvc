@@ -43,6 +43,9 @@
                 background: #1f2937;
                 color: white;
                 padding-top: 20px;
+
+                overflow-y: auto;
+                overflow-x: hidden;
             }
 
                 .sidebar .brand {
@@ -204,6 +207,14 @@
 
                     <i class="bi bi-bar-chart"></i>
                     Grades
+
+                </a>
+
+                <a asp-controller="TeacherPortal"
+                   asp-action="Index">
+
+                    <i class="bi bi-journal-text"></i>
+                    Teacher Portal
 
                 </a>
             }

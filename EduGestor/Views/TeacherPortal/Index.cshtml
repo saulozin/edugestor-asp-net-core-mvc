@@ -1,0 +1,90 @@
+﻿@model EduGestor.Models.ViewModels.TeacherPortalViewModel
+
+@{
+    ViewData["Title"] = "Teacher Portal";
+}
+
+<div class="container-fluid">
+
+    <div class="mb-4">
+
+        <h2 class="fw-bold">
+            Welcome, @Model.TeacherName
+        </h2>
+
+        <p class="text-muted">
+            Academic management and class diary
+        </p>
+
+    </div>
+
+    <div class="row g-4">
+
+        @foreach (var item in Model.Classes)
+        {
+            <div class="col-md-6 col-xl-4">
+
+                <div class="card border-0 shadow-sm rounded-4 h-100">
+
+                    <div class="card-body">
+
+                        <div class="mb-3">
+
+                            <h4 class="fw-bold mb-1">
+                                @item.Discipline
+                            </h4>
+
+                            <div class="text-muted">
+                                Class: @item.ClassCode
+                            </div>
+
+                        </div>
+
+                        <div class="mb-2">
+
+                            <strong>
+                                Students:
+                            </strong>
+
+                            @item.StudentsCount
+
+                        </div>
+
+                        <div class="mb-2">
+
+                            <strong>
+                                Average Grade:
+                            </strong>
+
+                            @item.AverageGrade.ToString("F1")
+
+                        </div>
+
+                        <div class="mb-4">
+
+                            <strong>
+                                Frequency:
+                            </strong>
+
+                            @item.AverageFrequency.ToString("F0")%
+
+                        </div>
+
+                        <a asp-action="ClassDiary"
+                           asp-route-disciplineClassId="@item.DisciplineClassId"
+                           class="btn btn-primary rounded-3 w-100">
+
+                            Open Diary
+
+                        </a>
+
+                    </div>
+
+                </div>
+
+            </div>
+        }
+
+    </div>
+
+</div>
