@@ -1,10 +1,12 @@
-﻿using EduGestor.Models.Identity;
+﻿using EduGestor.Data;
+using EduGestor.Models.Identity;
+using EduGestor.Models.ViewModels;
 using EduGestor.Models.ViewModels.Auth;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using EduGestor.Data;
 using Microsoft.EntityFrameworkCore;
+using System.Diagnostics;
 
 namespace EduGestor.Controllers
 {
@@ -41,8 +43,7 @@ namespace EduGestor.Controllers
 
         [HttpPost]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> Register(
-            RegisterViewModel model)
+        public async Task<IActionResult> Register(RegisterViewModel model)
         {
             if (!ModelState.IsValid)
             {
@@ -76,17 +77,13 @@ namespace EduGestor.Controllers
             if (result.Succeeded)
             {
                 // ADD ROLE
-                await _userManager.AddToRoleAsync(
-                    user,
-                    model.Role);
+                await _userManager.AddToRoleAsync(user, model.Role);
 
                 // LINK GUARDIAN
                 if (model.Role == "Guardian")
                 {
-                    var guardian =
-                        await _context.Guardians
-                            .FirstOrDefaultAsync(g =>
-                                g.Email == model.Email);
+                    var guardian = await _context.Guardians
+                        .FirstOrDefaultAsync(g => g.Email == model.Email);
 
                     if (guardian != null)
                     {
@@ -98,9 +95,8 @@ namespace EduGestor.Controllers
 
                 TempData["Success"] = "User created successfully.";
 
-                return RedirectToAction(
-                    "Index",
-                    "Home");
+                return RedirectToAction("Index", "Home");
+
             }
 
             foreach (var error in result.Errors)
@@ -124,46 +120,37 @@ namespace EduGestor.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Login(
-            LoginViewModel model)
+        public async Task<IActionResult> Login(LoginViewModel model)
         {
             if (!ModelState.IsValid)
             {
                 return View(model);
             }
 
-            var result =
-                await _signInManager.PasswordSignInAsync(
+            var result = await _signInManager
+                .PasswordSignInAsync(
                     model.Email,
                     model.Password,
                     model.RememberMe,
-                    false);
+                    false
+                );
 
             if (result.Succeeded)
             {
-                var user =
-                    await _userManager.FindByEmailAsync(model.Email);
+                var user = await _userManager.FindByEmailAsync(model.Email);
 
                 // GUARDIAN
-                if (user != null &&
-                    await _userManager.IsInRoleAsync(
-                        user,
-                        "Guardian"))
+                if (user != null && await _userManager.IsInRoleAsync(user, "Guardian"))
                 {
-                    return RedirectToAction(
-                        "Index",
-                        "Portal");
+                    return RedirectToAction("Index", "Portal");
                 }
 
                 // ADMIN AREA
-                return RedirectToAction(
-                    "Index",
-                    "Home");
+                return RedirectToAction("Index", "Home");
+
             }
 
-            ModelState.AddModelError(
-                string.Empty,
-                "Invalid login attempt.");
+            ModelState.AddModelError(string.Empty, "Invalid login attempt.");
 
             return View(model);
         }
@@ -177,9 +164,7 @@ namespace EduGestor.Controllers
         {
             await _signInManager.SignOutAsync();
 
-            return RedirectToAction(
-                "Login",
-                "Account");
+            return RedirectToAction("Login", "Account");
         }
 
         // =========================
@@ -189,6 +174,17 @@ namespace EduGestor.Controllers
         public IActionResult AccessDenied()
         {
             return View();
+        }
+
+        public IActionResult Error(string message)
+        {
+            var viewModel = new ErrorViewModel
+            {
+                Message = message,
+                RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier
+            };
+
+            return View(viewModel);
         }
     }
 }

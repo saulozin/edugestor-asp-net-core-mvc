@@ -1,8 +1,11 @@
-﻿using EduGestor.Services;
+﻿using EduGestor.Models.Identity;
+using EduGestor.Models.ViewModels;
+using EduGestor.Services;
+using EduGestor.Services.Exceptions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using EduGestor.Models.Identity;
+using System.Diagnostics;
 
 namespace EduGestor.Controllers
 {
@@ -24,19 +27,35 @@ namespace EduGestor.Controllers
 
         public async Task<IActionResult> Index()
         {
-            var user =
-                await _userManager.GetUserAsync(User);
+            var user = await _userManager.GetUserAsync(User);
 
             if (user == null)
             {
                 return Unauthorized();
             }
 
-            var vm =
-                await _portalService
+            try
+            {
+                var vm = await _portalService
                     .GetPortalDataAsync(user.Email!);
 
-            return View(vm);
+                return View(vm);
+            }
+            catch (IntegrityException err)
+            {
+                return RedirectToAction(nameof(Error), new { message = err.Message });
+            }
+        }
+
+        public IActionResult Error(string message)
+        {
+            var viewModel = new ErrorViewModel
+            {
+                Message = message,
+                RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier
+            };
+
+            return View(viewModel);
         }
     }
 }

@@ -48,8 +48,7 @@ namespace EduGestor.Controllers
         // AUTHORIZATION
         // =========================
 
-        private async Task<bool> UserCanAccessGradeAsync(
-            Grade grade)
+        private async Task<bool> UserCanAccessGradeAsync(Grade grade)
         {
             // ADMIN
             if (User.IsInRole("Admin"))
@@ -67,18 +66,15 @@ namespace EduGestor.Controllers
                     return false;
                 }
 
-                var teacher =
-                    await _context.Teachers
-                        .FirstOrDefaultAsync(t =>
-                            t.Email == email);
+                var teacher = await _context.Teachers
+                    .FirstOrDefaultAsync(t => t.Email == email);
 
                 if (teacher == null)
                 {
                     return false;
                 }
 
-                return grade.DisciplineClass?.TeacherId
-                    == teacher.Id;
+                return grade.DisciplineClass?.TeacherId == teacher.Id;
             }
 
             return false;
@@ -88,48 +84,39 @@ namespace EduGestor.Controllers
         // SELECT LISTS
         // =========================
 
-        private async Task<List<SelectListItem>>
-            GetRegistrationsSelectList()
+        private async Task<List<SelectListItem>> GetRegistrationsSelectList()
         {
-            var regs =
-                await _registrationService.FindAllAsync();
+            var regs = await _registrationService.FindAllAsync();
 
-            return regs.Select(r => new SelectListItem
-            {
-                Value = r.Id.ToString(),
+            return regs
+                .Select(r => 
+                    new SelectListItem
+                    {
+                        Value = r.Id.ToString(),
 
-                Text =
-                    $"{r.Student!.Name} - " +
-                    $"{r.StudentClass!.Code}"
-
-            }).ToList();
+                        Text = $"{r.Student!.Name} - " + $"{r.StudentClass!.Code}"
+                    }
+                )
+                .ToList();
         }
 
-        private async Task<List<SelectListItem>>
-            GetDisciplineClassesSelectList()
+        private async Task<List<SelectListItem>> GetDisciplineClassesSelectList()
         {
-            var disciplineClasses =
-                await _disciplineClassService
-                    .FindAllAsync();
+            var disciplineClasses = await _disciplineClassService.FindAllAsync();
 
             // PROFESSOR
             if (User.IsInRole("Teacher"))
             {
                 var email = User.Identity?.Name;
 
-                var teacher =
-                    await _context.Teachers
-                        .FirstOrDefaultAsync(t =>
-                            t.Email == email);
+                var teacher = await _context.Teachers
+                    .FirstOrDefaultAsync(t => t.Email == email);
 
                 if (teacher != null)
                 {
-                    disciplineClasses =
-                        disciplineClasses
-                            .Where(dc =>
-                                dc.TeacherId ==
-                                teacher.Id)
-                            .ToList();
+                    disciplineClasses = disciplineClasses
+                        .Where(dc => dc.TeacherId == teacher.Id)
+                        .ToList();
                 }
             }
 
@@ -145,8 +132,7 @@ namespace EduGestor.Controllers
                 }).ToList();
         }
 
-        private async Task BuildViewModelAsync(
-            GradeFormViewModel vm)
+        private async Task BuildViewModelAsync(GradeFormViewModel vm)
         {
             vm.Registrations =
                 await GetRegistrationsSelectList();

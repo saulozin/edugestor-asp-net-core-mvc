@@ -1,0 +1,241 @@
+﻿@model EduGestor.ViewModels.TeacherClassDetailsViewModel
+
+@{
+    ViewData["Title"] = "Class Details";
+}
+
+<div class="container-fluid">
+
+    <!-- HEADER -->
+    <div class="mb-4">
+
+        <h2 class="fw-bold">
+            @Model.Discipline
+        </h2>
+
+        <div class="text-muted">
+
+            Class:
+            <strong>
+                @Model.ClassCode
+            </strong>
+
+            |
+
+            Teacher:
+            <strong>
+                @Model.TeacherName
+            </strong>
+
+        </div>
+
+    </div>
+
+    <!-- SUMMARY CARDS -->
+    <div class="row g-4 mb-4">
+
+        <!-- STUDENTS -->
+        <div class="col-md-4">
+
+            <div class="card border-0 shadow-sm rounded-4">
+
+                <div class="card-body">
+
+                    <p class="text-muted mb-1">
+                        Students
+                    </p>
+
+                    <h2 class="fw-bold">
+
+                        @Model.Students.Count
+
+                    </h2>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- AVERAGE -->
+        <div class="col-md-4">
+
+            <div class="card border-0 shadow-sm rounded-4">
+
+                <div class="card-body">
+
+                    <p class="text-muted mb-1">
+                        Class Average
+                    </p>
+
+                    <h2 class="fw-bold text-primary">
+
+                        @(Model.Students.Any()
+                            ? Model.Students
+                                .Average(s => s.AverageGrade)
+                                .ToString("F1")
+                            : "0")
+
+                    </h2>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- FREQUENCY -->
+        <div class="col-md-4">
+
+            <div class="card border-0 shadow-sm rounded-4">
+
+                <div class="card-body">
+
+                    <p class="text-muted mb-1">
+                        Average Frequency
+                    </p>
+
+                    <h2 class="fw-bold text-success">
+
+                        @(Model.Students.Any()
+                            ? Model.Students
+                                .Average(s => s.Frequency)
+                                .ToString("F0")
+                            : "0")%
+
+                    </h2>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- TABLE -->
+    <div class="card border-0 shadow-sm rounded-4">
+
+        <div class="card-body">
+
+            <div class="d-flex justify-content-between
+                align-items-center mb-4">
+
+                <h4 class="fw-bold mb-0">
+                    Students
+                </h4>
+
+            </div>
+
+            <div class="table-responsive">
+
+                <table class="table align-middle table-hover">
+
+                    <thead class="table-light">
+
+                        <tr>
+
+                            <th>Student</th>
+                            <th>Average</th>
+                            <th>Frequency</th>
+                            <th>Status</th>
+                            <th width="320">Actions</th>
+
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                        @foreach (var item in Model.Students)
+                        {
+                            <tr>
+
+                                <td>
+
+                                    <strong>
+                                        @item.StudentName
+                                    </strong>
+
+                                </td>
+
+                                <td>
+
+                                    @item.AverageGrade.ToString("F1")
+
+                                </td>
+
+                                <td>
+
+                                    @item.Frequency.ToString("F0")%
+
+                                </td>
+
+                                <td>
+
+                                    @if (item.Approved)
+                                    {
+                                        <span class="badge bg-success">
+                                            Approved
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-danger">
+                                            Attention
+                                        </span>
+                                    }
+
+                                </td>
+
+                                <td>
+
+                                    <div class="d-flex gap-2">
+
+                                        <!-- LAUNCH GRADE -->
+                                        <a asp-controller="Grades"
+                                           asp-action="Create"
+                                           class="btn btn-sm btn-primary rounded-pill">
+
+                                            <i class="bi bi-pencil-square"></i>
+                                            Launch Grade
+
+                                        </a>
+
+                                        <!-- ATTENDANCE -->
+                                        <a href="#"
+                                           class="btn btn-sm btn-success rounded-pill">
+
+                                            <i class="bi bi-calendar-check"></i>
+                                            Attendance
+
+                                        </a>
+
+                                        <!-- REPORT CARD -->
+                                        <a asp-controller="Reports"
+                                           asp-action="ReportCard"
+                                           asp-route-registrationId="@item.RegistrationId"
+                                           class="btn btn-sm btn-danger rounded-pill">
+
+                                            <i class="bi bi-file-earmark-pdf"></i>
+
+                                        </a>
+
+                                    </div>
+
+                                </td>
+
+                            </tr>
+                        }
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>

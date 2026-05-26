@@ -38,5 +38,20 @@ namespace EduGestor.Controllers
 
             return View(vm);
         }
+
+        public async Task<IActionResult> Details(Guid disciplineClassId)
+        {
+            var vm =
+                await _teacherPortalService
+                    .GetClassDetailsAsync(disciplineClassId);
+
+            if (vm == null)
+            {
+                throw new NotFoundException(
+                    "Class not found.");
+            }
+
+            return View(vm);
+        }
     }
 }

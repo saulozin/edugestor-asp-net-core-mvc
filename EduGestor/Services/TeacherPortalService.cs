@@ -10,19 +10,14 @@ namespace EduGestor.Services
     {
         private readonly EduGestorContext _context;
 
-        public TeacherPortalService(
-            EduGestorContext context)
+        public TeacherPortalService(EduGestorContext context)
         {
             _context = context;
         }
 
-        public async Task<TeacherPortalViewModel?>
-            GetPortalDataAsync(
-                string email,
-                bool isAdmin = false)
+        public async Task<TeacherPortalViewModel?> GetPortalDataAsync(string email, bool isAdmin = false)
         {
-            var vm =
-                new TeacherPortalViewModel();
+            var vm = new TeacherPortalViewModel();
 
             // =========================================
             // ADMIN -> VISUALIZA TODAS AS TURMAS
@@ -155,6 +150,98 @@ namespace EduGestor.Services
                                 ? grades.Average(
                                     g => g.Frequency)
                                 : 0
+                    });
+            }
+
+            return vm;
+        }
+
+        public async Task<TeacherClassDetailsViewModel?> GetClassDetailsAsync(Guid disciplineClassId)
+        {
+            var disciplineClass =
+                await _context.DisciplineClasses
+                    .Include(dc => dc.Discipline)
+                    .Include(dc => dc.StudentClass)
+                    .Include(dc => dc.Teacher)
+
+                    .Include(dc => dc.Grades)
+                        .ThenInclude(g => g.Registration)
+                            .ThenInclude(r => r.Student)
+
+                    .FirstOrDefaultAsync(dc =>
+                        dc.Id == disciplineClassId);
+
+            if (disciplineClass == null)
+            {
+                return null;
+            }
+
+            var vm =
+                new TeacherClassDetailsViewModel
+                {
+                    DisciplineClassId =
+                        disciplineClass.Id,
+
+                    Discipline =
+                        disciplineClass
+                            .Discipline?.Name ?? "-",
+
+                    ClassCode =
+                        disciplineClass
+                            .StudentClass?.Code ?? "-",
+
+                    TeacherName =
+                        disciplineClass
+                            .Teacher?.Name ?? "-"
+                };
+
+            var registrations =
+                disciplineClass.Grades
+                    .Select(g => g.Registration)
+                    .Where(r => r != null)
+                    .Distinct()
+                    .ToList();
+
+            foreach (var registration in registrations)
+            {
+                var studentGrades =
+                    disciplineClass.Grades
+                        .Where(g =>
+                            g.RegistrationId ==
+                            registration!.Id)
+                        .ToList();
+
+                var averageGrade =
+                    studentGrades.Any()
+                        ? studentGrades.Average(
+                            g => g.StudentGrade)
+                        : 0;
+
+                var frequency =
+                    studentGrades.Any()
+                        ? studentGrades.Average(
+                            g => g.Frequency)
+                        : 0;
+
+                vm.Students.Add(
+                    new TeacherStudentRowViewModel
+                    {
+                        RegistrationId =
+                            registration!.Id,
+
+                        StudentName =
+                            registration.Student?.Name
+                            ?? "-",
+
+                        AverageGrade =
+                            averageGrade,
+
+                        Frequency =
+                            frequency,
+
+                        Approved =
+                            averageGrade >= 7 &&
+                            frequency >= 75
                     });
             }
 
