@@ -19,73 +19,107 @@ namespace EduGestor.Services
         public async Task<TeacherPortalViewModel?>
             GetPortalDataAsync(
                 string email,
-                bool isAdmin)
+                bool isAdmin = false)
         {
-            Teacher? teacher = null;
-
-            // =========================
-            // TEACHER USER
-            // =========================
-
-            if (!isAdmin)
-            {
-                teacher =
-                    await _context.Teachers
-                        .Include(t => t.DisciplineClasses)
-                            .ThenInclude(dc => dc.Discipline)
-
-                        .Include(t => t.DisciplineClasses)
-                            .ThenInclude(dc => dc.StudentClass)
-
-                        .Include(t => t.DisciplineClasses)
-                            .ThenInclude(dc => dc.Grades)
-
-                        .FirstOrDefaultAsync(t =>
-                            t.Email == email);
-
-                if (teacher == null)
-                {
-                    return null;
-                }
-            }
-
-            // =========================
-            // ADMIN USER
-            // =========================
-
-            var disciplineClassesQuery =
-                _context.DisciplineClasses
-                    .Include(dc => dc.Discipline)
-                    .Include(dc => dc.StudentClass)
-                    .Include(dc => dc.Grades)
-                    .AsQueryable();
-
-            // FILTER ONLY FOR TEACHER
-            if (!isAdmin)
-            {
-                disciplineClassesQuery =
-                    disciplineClassesQuery
-                        .Where(dc =>
-                            dc.TeacherId == teacher!.Id);
-            }
-
-            var disciplineClasses =
-                await disciplineClassesQuery
-                    .ToListAsync();
-
             var vm =
-                new TeacherPortalViewModel
-                {
-                    TeacherName =
-                        isAdmin
-                            ? "Administrator"
-                            : teacher!.Name
-                };
+                new TeacherPortalViewModel();
 
-            foreach (var disciplineClass in disciplineClasses)
+            // =========================================
+            // ADMIN -> VISUALIZA TODAS AS TURMAS
+            // =========================================
+
+            if (isAdmin)
+            {
+                vm.TeacherName = "Administrator";
+
+                var allDisciplineClasses =
+                    await _context.DisciplineClasses
+                        .Include(dc => dc.Discipline)
+                        .Include(dc => dc.StudentClass)
+                        .Include(dc => dc.Teacher)
+                        .Include(dc => dc.Grades)
+                        .ToListAsync();
+
+                foreach (var disciplineClass in allDisciplineClasses)
+                {
+                    var grades =
+                        disciplineClass.Grades?
+                            .ToList()
+                        ?? new List<Grade>();
+
+                    vm.Classes.Add(
+                        new TeacherClassViewModel
+                        {
+                            DisciplineClassId =
+                                disciplineClass.Id,
+
+                            Discipline =
+                                disciplineClass
+                                    .Discipline?.Name ?? "-",
+
+                            ClassCode =
+                                disciplineClass
+                                    .StudentClass?.Code ?? "-",
+
+                            TeacherName =
+                                disciplineClass
+                                    .Teacher?.Name ?? "-",
+
+                            StudentsCount =
+                                grades
+                                    .Select(g => g.RegistrationId)
+                                    .Distinct()
+                                    .Count(),
+
+                            AverageGrade =
+                                grades.Any()
+                                    ? grades.Average(
+                                        g => g.StudentGrade)
+                                    : 0,
+
+                            AverageFrequency =
+                                grades.Any()
+                                    ? grades.Average(
+                                        g => g.Frequency)
+                                    : 0
+                        });
+                }
+
+                return vm;
+            }
+
+            // =========================================
+            // PROFESSOR -> APENAS SUAS DISCIPLINAS
+            // =========================================
+
+            var teacher =
+                await _context.Teachers
+                    .Include(t => t.DisciplineClasses)
+                        .ThenInclude(dc => dc.Discipline)
+                    .Include(t => t.DisciplineClasses)
+                        .ThenInclude(dc => dc.StudentClass)
+                    .Include(t => t.DisciplineClasses)
+                        .ThenInclude(dc => dc.Grades)
+                    .FirstOrDefaultAsync(t =>
+                        t.Email == email);
+
+            if (teacher == null)
+            {
+                return null;
+            }
+
+            vm.TeacherName =
+                teacher.Name ?? "Teacher";
+
+            foreach (
+                var disciplineClass in
+                teacher.DisciplineClasses
+                    ?? new List<DisciplineClass>())
             {
                 var grades =
-                    disciplineClass.Grades.ToList();
+                    disciplineClass.Grades?
+                        .ToList()
+                    ?? new List<Grade>();
 
                 vm.Classes.Add(
                     new TeacherClassViewModel
@@ -100,6 +134,9 @@ namespace EduGestor.Services
                         ClassCode =
                             disciplineClass
                                 .StudentClass?.Code ?? "-",
+
+                        TeacherName =
+                            teacher.Name ?? "Teacher",
 
                         StudentsCount =
                             grades
