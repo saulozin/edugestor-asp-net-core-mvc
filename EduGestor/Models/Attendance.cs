@@ -18,6 +18,9 @@ namespace EduGestor.Models
         [Required]
         public bool Present { get; set; }
 
+        [Required]
+        public int Bimester { get; set; }
+
         // =========================================
         // REGISTRATION
         // =========================================
@@ -47,7 +50,7 @@ namespace EduGestor.Models
         // AUDIT
         // =========================================
 
-        public DateTime? CreatedAt { get; set; } = DateTime.UtcNow;
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         public DateTime? UpdatedAt { get; set; }
     }

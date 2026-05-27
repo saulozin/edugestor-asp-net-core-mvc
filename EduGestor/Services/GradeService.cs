@@ -10,34 +10,30 @@ namespace EduGestor.Services
     {
         private readonly EduGestorContext _context;
 
-        public GradeService(EduGestorContext context)
+        private readonly AcademicRulesService _academicRulesService;
+
+        public GradeService(EduGestorContext context, AcademicRulesService academicRulesService)
         {
             _context = context;
+            _academicRulesService = academicRulesService;
         }
 
         public async Task<List<Grade>> FindAllAsync()
         {
             return await _context.Grades
-
                 // REGISTRATION
                 .Include(g => g.Registration)
                     .ThenInclude(r => r!.Student)
-
                 .Include(g => g.Registration)
                     .ThenInclude(r => r!.StudentClass)
-
                 // DISCIPLINE CLASS
                 .Include(g => g.DisciplineClass)
                     .ThenInclude(dc => dc!.Discipline)
-
                 .Include(g => g.DisciplineClass)
                     .ThenInclude(dc => dc!.Teacher)
-
                 .Include(g => g.DisciplineClass)
                     .ThenInclude(dc => dc!.StudentClass)
-
                 .OrderByDescending(g => g.CreatedAt)
-
                 .ToListAsync();
         }
 
@@ -62,26 +58,16 @@ namespace EduGestor.Services
                 query = query.Where(g =>
 
                     EF.Functions.ILike(
-                        g.Registration!.Student!.Name,
-                        $"%{search}%")
-
-                    ||
+                        g.Registration!.Student!.Name, $"%{search}%") ||
 
                     EF.Functions.ILike(
-                        g.Registration.StudentClass!.Code,
-                        $"%{search}%")
-
-                    ||
+                        g.Registration.StudentClass!.Code, $"%{search}%") ||
 
                     EF.Functions.ILike(
-                        g.DisciplineClass!.Discipline!.Name,
-                        $"%{search}%")
-
-                    ||
+                        g.DisciplineClass!.Discipline!.Name, $"%{search}%") ||
 
                     EF.Functions.ILike(
-                        g.DisciplineClass.Teacher!.Name,
-                        $"%{search}%")
+                        g.DisciplineClass.Teacher!.Name, $"%{search}%")
                 );
             }
 
@@ -98,13 +84,6 @@ namespace EduGestor.Services
                     g.StudentGrade <= filters.MaxGrade.Value);
             }
 
-            // Student Frequancies
-            if (filters.MinFrequency.HasValue)
-            {
-                query = query.Where(g =>
-                    g.Frequency >= filters.MinFrequency.Value);
-            }
-
             // Bimester
             if (filters.Bimester.HasValue)
             {
@@ -118,33 +97,124 @@ namespace EduGestor.Services
             }
 
             // Student Status
-            if (filters.Approved.HasValue)
+            // Academic Status
+            if (filters.Status.HasValue)
             {
-                if (filters.Approved.Value)
+                var studentGrades = await query.ToListAsync();
+
+                var filteredGrades = new List<GradeRowViewModel>();
+
+                foreach (var g in studentGrades)
                 {
-                    // APPROVED
-                    query = query.Where(g =>
-                        g.StudentGrade >= 6.0m &&
-                        g.Frequency >= 75.0m);
+                    var frequency =
+                        await CalculateFrequencyAsync(
+                            g.RegistrationId!.Value,
+                            g.DisciplineClassId!.Value);
+
+                    var status =
+                        _academicRulesService
+                            .CalculateStatus(
+                                g.StudentGrade,
+                                frequency);
+
+                    if (status == filters.Status.Value)
+                    {
+                        filteredGrades.Add(
+                            new GradeRowViewModel
+                            {
+                                Id = g.Id,
+
+                                StudentName =
+                                    g.Registration?.Student?.Name ?? "-",
+
+                                ClassCode =
+                                    g.Registration?.StudentClass?.Code ?? "-",
+
+                                Discipline =
+                                    g.DisciplineClass?.Discipline?.Name ?? "-",
+
+                                TeacherName =
+                                    g.DisciplineClass?.Teacher?.Name ?? "-",
+
+                                Grade =
+                                    g.StudentGrade,
+
+                                Frequency =
+                                    frequency,
+
+                                Status =
+                                    status,
+
+                                Bimester =
+                                    g.Bimester,
+
+                                SchoolYear =
+                                    g.SchoolYear
+                            });
+                    }
                 }
-                else
-                {
-                    // FAILED
-                    query = query.Where(g =>
-                        g.StudentGrade < 6.0m ||
-                        g.Frequency < 75.0m);
-                }
+
+                filters.Grades = filteredGrades;
+
+                return filters;
             }
 
             // TOTAL
             var totalItems = await query.CountAsync();
 
             // PAGINATION
-            var grades = await query
+            var gradesData = await query
                 .OrderBy(g => g.Registration!.Student!.Name)
                 .Skip((filters.PageNumber - 1) * filters.PageSize)
                 .Take(filters.PageSize)
                 .ToListAsync();
+
+            var grades = new List<GradeRowViewModel>();
+
+            foreach (var g in gradesData)
+            {
+                var frequency =
+                    await CalculateFrequencyAsync(
+                        g.RegistrationId!.Value,
+                        g.DisciplineClassId!.Value);
+
+                var status =
+                    _academicRulesService
+                        .CalculateStatus(g.StudentGrade, frequency);
+
+                grades.Add(
+                    new GradeRowViewModel
+                    {
+                        Id = g.Id,
+
+                        StudentName =
+                            g.Registration?.Student?.Name ?? "-",
+
+                        ClassCode =
+                            g.Registration?.StudentClass?.Code ?? "-",
+
+                        Discipline =
+                            g.DisciplineClass?.Discipline?.Name ?? "-",
+
+                        TeacherName =
+                            g.DisciplineClass?.Teacher?.Name ?? "-",
+
+                        Grade =
+                            g.StudentGrade,
+
+                        Frequency =
+                            frequency,
+
+                        Status =
+                            status,
+
+                        Bimester =
+                            g.Bimester,
+
+                        SchoolYear =
+                            g.SchoolYear
+                    });
+            }
 
             filters.Grades = grades;
 
@@ -194,9 +264,7 @@ namespace EduGestor.Services
             }
         }
 
-        private async Task<decimal> CalculateFrequencyAsync(
-    Guid registrationId,
-    Guid disciplineClassId)
+        private async Task<decimal> CalculateFrequencyAsync(Guid registrationId, Guid disciplineClassId)
         {
             var attendances =
                 await _context.Attendances
@@ -217,9 +285,10 @@ namespace EduGestor.Services
             var presents =
                 attendances.Count(a => a.Present);
 
-            return Math.Round(
-                ((decimal)presents / totalClasses) * 100,
-                2);
+            return
+                Math.Round(
+                    ((decimal)presents / totalClasses) * 100,
+                    2);
         }
 
         // ========================
@@ -248,11 +317,6 @@ namespace EduGestor.Services
                 {
                     throw new IntegrityException("Invalid grade data.");
                 }
-
-                grade.Frequency =
-                    await CalculateFrequencyAsync(
-                        grade.RegistrationId.Value,
-                        grade.DisciplineClassId.Value);
 
                 grade.CreatedAt = DateTime.UtcNow;
 
@@ -302,11 +366,6 @@ namespace EduGestor.Services
                     throw new IntegrityException("Invalid grade data.");
                 }
 
-                grade.Frequency =
-                    await CalculateFrequencyAsync(
-                        grade.RegistrationId.Value,
-                        grade.DisciplineClassId.Value);
-
                 grade.UpdatedAt = DateTime.UtcNow;
 
                 _context.Grades.Update(grade);
@@ -315,7 +374,7 @@ namespace EduGestor.Services
             }
             catch (DbUpdateConcurrencyException err)
             {
-                throw new DbConcurrencyException( err.Message);
+                throw new DbConcurrencyException(err.Message);
             }
         }
 

@@ -56,6 +56,7 @@ builder.Services.AddScoped<ValidateExtensions>();
 builder.Services.AddScoped<PortalService>();
 builder.Services.AddScoped<ReportService>();
 builder.Services.AddScoped<TeacherPortalService>();
+builder.Services.AddScoped<AcademicRulesService>();
 
 var app = builder.Build();
 

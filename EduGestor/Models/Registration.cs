@@ -80,16 +80,21 @@ namespace EduGestor.Models
 
         public decimal GetAttendance(Guid disciplineClassId)
         {
-            var grades = Grades
-                .Where(g => g.DisciplineClassId == disciplineClassId)
+            var attendances = Attendances
+                .Where(a => a.DisciplineClassId == disciplineClassId)
                 .ToList();
 
-            if (!grades.Any())
+            if (!attendances.Any())
             {
                 return 0;
             }
 
-            return grades.Average(g => g.Frequency);
+            var totalClasses = attendances.Count;
+
+            var presents = attendances.Count(a => a.Present);
+
+            return Math.Round(
+                ((decimal)presents / totalClasses) * 100, 2);
         }
 
         public bool IsApproved(Guid disciplineClassId)

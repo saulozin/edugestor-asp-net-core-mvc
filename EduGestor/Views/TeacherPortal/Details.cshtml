@@ -1,4 +1,5 @@
 ﻿@model EduGestor.ViewModels.TeacherClassDetailsViewModel
+@using EduGestor.Models.Enums
 
 @{
     ViewData["Title"] = "Class Details";
@@ -173,16 +174,34 @@
 
                                 <td>
 
-                                    @if (item.Approved)
+                                    @if (item.Status == AcademicStatus.Approved)
                                     {
                                         <span class="badge bg-success">
                                             Approved
                                         </span>
                                     }
-                                    else
+                                    else if (item.Status == AcademicStatus.Recovery)
+                                    {
+                                        <span class="badge bg-warning text-dark">
+                                            Recovery
+                                        </span>
+                                    }
+                                    else if (item.Status == AcademicStatus.FailedByAttendance)
                                     {
                                         <span class="badge bg-danger">
-                                            Attention
+                                            Failed Attendance
+                                        </span>
+                                    }
+                                    else if (item.Status == AcademicStatus.FailedByGrade)
+                                    {
+                                        <span class="badge bg-danger">
+                                            Failed Grade
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary">
+                                            In Progress
                                         </span>
                                     }
 

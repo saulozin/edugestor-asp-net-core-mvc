@@ -145,8 +145,7 @@ namespace EduGestor.Controllers
         // INDEX
         // =========================
 
-        public async Task<IActionResult> Index(
-            GradeSearchViewModel filters)
+        public async Task<IActionResult> Index(GradeSearchViewModel filters)
         {
             var vm =
                 await _gradeService
@@ -169,10 +168,8 @@ namespace EduGestor.Controllers
             if (teacher != null)
             {
                 vm.Grades =
-                    vm.Grades
-                        .Where(g =>
-                            g.DisciplineClass?.TeacherId
-                                == teacher.Id)
+                    vm.Grades?
+                        .Where(g => g.TeacherName == teacher.Name)
                         .ToList();
             }
 
@@ -187,7 +184,10 @@ namespace EduGestor.Controllers
         {
             var vm = new GradeFormViewModel
             {
-                Grade = new Grade()
+                Grade = new Grade
+                {
+                    SchoolYear = DateTime.Now.Year
+                }
             };
 
             await BuildViewModelAsync(vm);

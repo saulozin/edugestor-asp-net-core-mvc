@@ -1,4 +1,5 @@
 ﻿using EduGestor.Data;
+using EduGestor.Models.Enums;
 using EduGestor.Services.Exceptions;
 using EduGestor.ViewModels;
 using Microsoft.EntityFrameworkCore;
@@ -12,9 +13,13 @@ namespace EduGestor.Services
     {
         private readonly EduGestorContext _context;
 
-        public ReportService(EduGestorContext context)
+        private readonly AcademicRulesService _academicRulesService;
+
+        public ReportService(EduGestorContext context, AcademicRulesService academicRulesService)
         {
             _context = context;
+
+            _academicRulesService = academicRulesService;
         }
 
         public async Task<byte[]> GenerateReportCardAsync(
@@ -41,30 +46,36 @@ namespace EduGestor.Services
                     .GroupBy(g => new
                     {
                         g.DisciplineClassId,
-                        Discipline =
-                            g.DisciplineClass!
-                                .Discipline!
-                                .Name
+
+                        Discipline = g.DisciplineClass!.Discipline!.Name
                     })
-                    .Select(g => new
-                        ReportCardDisciplineViewModel
+
+                    .Select(g =>
                     {
-                        Discipline =
-                            g.Key.Discipline,
+                        var disciplineClassId =
+                            g.Key.DisciplineClassId ?? Guid.Empty;
 
-                        Average =
-                            g.Average(x => x.StudentGrade),
+                        var average =
+                            g.Average(x => x.StudentGrade);
 
-                        Frequency =
-                            g.Average(x => x.Frequency),
+                        var frequency =
+                            registration.GetAttendance(disciplineClassId);
 
-                        Status =
-                            registration.IsApproved(
-                                g.Key.DisciplineClassId ??
-                                Guid.Empty)
-                            ? "Aprovado"
-                            : "Reprovado"
+                        var status =
+                            _academicRulesService.CalculateStatus(average, frequency);
+
+                        return new ReportCardDisciplineViewModel
+                        {
+                            Discipline = g.Key.Discipline,
+
+                            Average = average,
+
+                            Frequency = frequency,
+
+                            Status = GetStatusLabel(status)
+                        };
                     })
+
                     .ToList();
 
             var averageGrade =
@@ -76,7 +87,8 @@ namespace EduGestor.Services
                     ? disciplines.Average(d => d.Frequency) : 0;
 
             var approved =
-                disciplines.All(d => d.Status == "Aprovado");
+                disciplines.All(d =>
+                    d.Status == AcademicStatus.Approved.ToString());
 
             var model =
                 new ReportCardViewModel
@@ -236,5 +248,27 @@ namespace EduGestor.Services
                     .Padding(5);
             }
         }
+
+        private string GetStatusLabel(AcademicStatus status)
+        {
+            return status switch
+            {
+                AcademicStatus.Approved =>
+                    "Aprovado",
+
+                AcademicStatus.Recovery =>
+                    "Recuperação",
+
+                AcademicStatus.FailedByAttendance =>
+                    "Reprovado por frequência",
+
+                AcademicStatus.FailedByGrade =>
+                    "Reprovado por nota",
+
+                _ =>
+                    "In Progress"
+            };
+        }
     }
+
 }

@@ -83,10 +83,6 @@ namespace EduGestor.Data
                 .HasPrecision(5, 2);
 
             modelBuilder.Entity<Grade>()
-                .Property(g => g.Frequency)
-                .HasPrecision(5, 2);
-
-            modelBuilder.Entity<Grade>()
                 .HasOne(g => g.Registration)
                 .WithMany(r => r.Grades)
                 .HasForeignKey(g => g.RegistrationId)

@@ -10,9 +10,12 @@ namespace EduGestor.Services
     {
         private readonly EduGestorContext _context;
 
-        public TeacherPortalService(EduGestorContext context)
+        private readonly AcademicRulesService _academicRulesService;
+
+        public TeacherPortalService(EduGestorContext context, AcademicRulesService academicRulesService)
         {
             _context = context;
+            _academicRulesService = academicRulesService;
         }
 
         public async Task<TeacherPortalViewModel?> GetPortalDataAsync(string email, bool isAdmin = false)
@@ -41,6 +44,30 @@ namespace EduGestor.Services
                         disciplineClass.Grades?
                             .ToList()
                         ?? new List<Grade>();
+
+                    var registrationIds =
+                        grades.Select(g => g.RegistrationId)
+                        .Distinct()
+                        .ToList();
+
+                    decimal averageFrequency = 0;
+
+                    if (registrationIds.Any())
+                    {
+                        var frequencies = new List<decimal>();
+
+                        foreach (var registrationId in registrationIds)
+                        {
+                            var freq =
+                                await CalculateFrequencyAsync(
+                                    registrationId!.Value,
+                                    disciplineClass.Id);
+
+                            frequencies.Add(freq);
+                        }
+
+                        averageFrequency = frequencies.Average();
+                    }
 
                     vm.Classes.Add(
                         new TeacherClassViewModel
@@ -72,11 +99,7 @@ namespace EduGestor.Services
                                         g => g.StudentGrade)
                                     : 0,
 
-                            AverageFrequency =
-                                grades.Any()
-                                    ? grades.Average(
-                                        g => g.Frequency)
-                                    : 0
+                            AverageFrequency = averageFrequency
                         });
                 }
 
@@ -103,18 +126,39 @@ namespace EduGestor.Services
                 return null;
             }
 
-            vm.TeacherName =
-                teacher.Name ?? "Teacher";
+            vm.TeacherName = teacher.Name ?? "Teacher";
 
             foreach (
-                var disciplineClass in
-                teacher.DisciplineClasses
+                var disciplineClass in teacher.DisciplineClasses
                     ?? new List<DisciplineClass>())
             {
                 var grades =
-                    disciplineClass.Grades?
-                        .ToList()
-                    ?? new List<Grade>();
+                    disciplineClass.Grades?.ToList()
+                        ?? new List<Grade>();
+
+                var registrationIds =
+                        grades.Select(g => g.RegistrationId)
+                        .Distinct()
+                        .ToList();
+
+                decimal averageFrequency = 0;
+
+                if (registrationIds.Any())
+                {
+                    var frequencies = new List<decimal>();
+
+                    foreach (var registrationId in registrationIds)
+                    {
+                        var freq =
+                            await CalculateFrequencyAsync(
+                                registrationId!.Value,
+                                disciplineClass.Id);
+
+                        frequencies.Add(freq);
+                    }
+
+                    averageFrequency = frequencies.Average();
+                }
 
                 vm.Classes.Add(
                     new TeacherClassViewModel
@@ -145,11 +189,7 @@ namespace EduGestor.Services
                                     g => g.StudentGrade)
                                 : 0,
 
-                        AverageFrequency =
-                            grades.Any()
-                                ? grades.Average(
-                                    g => g.Frequency)
-                                : 0
+                        AverageFrequency = averageFrequency
                     });
             }
 
@@ -218,10 +258,8 @@ namespace EduGestor.Services
                         : 0;
 
                 var frequency =
-                    studentGrades.Any()
-                        ? studentGrades.Average(
-                            g => g.Frequency)
-                        : 0;
+                    await CalculateFrequencyAsync(
+                        registration!.Id, disciplineClass.Id);
 
                 vm.Students.Add(
                     new TeacherStudentRowViewModel
@@ -239,9 +277,9 @@ namespace EduGestor.Services
                         Frequency =
                             frequency,
 
-                        Approved =
-                            averageGrade >= 7 &&
-                            frequency >= 75
+                        Status = _academicRulesService
+                            .CalculateStatus(averageGrade, frequency)
+
                     });
             }
 
@@ -347,8 +385,6 @@ namespace EduGestor.Services
                 {
                     existingGrade.StudentGrade = student.Grade;
 
-                    existingGrade.Frequency = frequency;
-
                     existingGrade.UpdatedAt = DateTime.UtcNow;
 
                     continue;
@@ -366,8 +402,6 @@ namespace EduGestor.Services
                         DisciplineClassId = vm.DisciplineClassId,
 
                         StudentGrade = student.Grade,
-
-                        Frequency = frequency,
 
                         Bimester = vm.Bimester
                     };

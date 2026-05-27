@@ -1,4 +1,6 @@
-﻿namespace EduGestor.Models.ViewModels.Portal
+﻿using EduGestor.Models.Enums;
+
+namespace EduGestor.Models.ViewModels.Portal
 {
     public class PortalGradeViewModel
     {
@@ -10,6 +12,6 @@
 
         public int Bimester { get; set; }
 
-        public bool Approved { get; set; }
+        public AcademicStatus Status { get; set; }
     }
 }

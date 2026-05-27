@@ -1,4 +1,5 @@
 ﻿using EduGestor.Data;
+using EduGestor.Models.Enums;
 using EduGestor.Models.ViewModels.Portal;
 using Microsoft.EntityFrameworkCore;
 
@@ -8,13 +9,15 @@ namespace EduGestor.Services
     {
         private readonly EduGestorContext _context;
 
-        public PortalService(EduGestorContext context)
+        private readonly AcademicRulesService _academicRulesService;
+
+        public PortalService(EduGestorContext context, AcademicRulesService academicRulesService)
         {
             _context = context;
+            _academicRulesService = academicRulesService;
         }
 
-        public async Task<PortalViewModel?> GetPortalDataAsync(
-            string email)
+        public async Task<PortalViewModel?> GetPortalDataAsync(string email)
         {
             var guardian = await _context.Guardians
                 .Include(g => g.Students)
@@ -26,6 +29,10 @@ namespace EduGestor.Services
                         .ThenInclude(r => r.Grades)
                             .ThenInclude(g => g.DisciplineClass)
                                 .ThenInclude(dc => dc!.Discipline)
+
+                .Include(g => g.Students)
+                    .ThenInclude(s => s.Registrations)
+                        .ThenInclude(r => r.Attendances)
 
                 .FirstOrDefaultAsync(g => g.Email == email);
 
@@ -65,6 +72,14 @@ namespace EduGestor.Services
 
                 foreach (var grade in registration.Grades)
                 {
+                    var frequency =
+                        registration.GetAttendance(
+                            grade.DisciplineClassId ?? Guid.Empty);
+
+                    var status =
+                        _academicRulesService.CalculateStatus(
+                            grade.StudentGrade, frequency);
+
                     studentVm.Grades.Add(
                         new PortalGradeViewModel
                         {
@@ -74,13 +89,11 @@ namespace EduGestor.Services
 
                             Grade = grade.StudentGrade,
 
-                            Frequency = grade.Frequency,
-
                             Bimester = grade.Bimester,
 
-                            Approved =
-                                grade.StudentGrade >= 6m &&
-                                grade.Frequency >= 75m
+                            Frequency = frequency,
+
+                            Status = status
                         });
                 }
 

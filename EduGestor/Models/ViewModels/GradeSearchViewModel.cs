@@ -1,4 +1,6 @@
-﻿namespace EduGestor.Models.ViewModels
+﻿using EduGestor.Models.Enums;
+
+namespace EduGestor.Models.ViewModels
 {
     public class GradeSearchViewModel
     {
@@ -13,7 +15,7 @@
         public decimal? MinFrequency { get; set; }
 
         // Situação
-        public bool? Approved { get; set; }
+        public AcademicStatus? Status { get; set; }
 
         // Acadêmico
         public int? Bimester { get; set; }
@@ -22,11 +24,11 @@
 
         public int PageNumber { get; set; } = 1;
 
-        public int PageSize { get; set; } = 16;
+        public int PageSize { get; set; } = 20;
 
         public int TotalPages { get; set; }
 
         // Resultado
-        public IEnumerable<Grade> Grades { get; set; } = new List<Grade>();
+        public IEnumerable<GradeRowViewModel>? Grades { get; set; } = new List<GradeRowViewModel>();
     }
 }

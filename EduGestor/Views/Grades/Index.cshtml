@@ -1,4 +1,5 @@
 ﻿@model EduGestor.Models.ViewModels.GradeSearchViewModel
+@using EduGestor.Models.Enums
 
 @{
     ViewData["Title"] = "Grades";
@@ -87,26 +88,34 @@
                 <!-- STATUS -->
                 <div class="col-md-2">
 
-                    <label asp-for="Approved"
+                    <label asp-for="Status"
                            class="form-label fw-semibold">
 
                         Status
 
                     </label>
 
-                    <select asp-for="Approved"
+                    <select asp-for="Status"
                             class="form-select">
 
                         <option value="">
                             All
                         </option>
 
-                        <option value="true">
+                        <option value="@AcademicStatus.Approved">
                             Approved
                         </option>
 
-                        <option value="false">
-                            Failed
+                        <option value="@AcademicStatus.Recovery">
+                            Recovery
+                        </option>
+
+                        <option value="@AcademicStatus.FailedByGrade">
+                            Failed Grade
+                        </option>
+
+                        <option value="@AcademicStatus.FailedByAttendance">
+                            Failed Attendance
                         </option>
 
                     </select>
@@ -204,23 +213,15 @@
                         </tr>
                     }
 
-                    @foreach (var item in Model.Grades)
+                    @foreach (var item in Model.Grades!)
                     {
-                        var approved =
-                            item.Registration?
-                            .IsApproved(item.DisciplineClassId ?? Guid.Empty);
-
                         <tr>
 
                             <!-- STUDENT -->
                             <td>
 
                                 <div class="fw-semibold">
-
-                                    @(item.Registration?
-                                    .Student?
-                                    .Name)
-
+                                    @item.StudentName
                                 </div>
 
                             </td>
@@ -228,41 +229,27 @@
                             <!-- CLASS -->
                             <td>
 
-                                <span class="badge bg-primary rounded-pill px-3 py-2">
-
-                                    @(item.Registration?
-                                    .StudentClass?
-                                    .Code)
-
-                                </span>
+                                <strong>
+                                    @item.ClassCode
+                                </strong>
 
                             </td>
 
                             <!-- DISCIPLINE -->
                             <td>
-
-                                @(item.DisciplineClass?
-                                .Discipline?
-                                .Name)
-
+                                @item.Discipline
                             </td>
 
                             <!-- TEACHER -->
                             <td>
-
-                                @(item.DisciplineClass?
-                                .Teacher?
-                                .Name)
-
+                                @item.TeacherName
                             </td>
 
                             <!-- GRADE -->
                             <td class="text-center">
 
                                 <strong class="fs-6">
-
-                                    @item.StudentGrade.ToString("F1")
-
+                                    @item.Grade.ToString("F1")
                                 </strong>
 
                             </td>
@@ -277,37 +264,59 @@
                             <!-- STATUS -->
                             <td class="text-center">
 
-                                @if (approved == true)
+                                @switch (item.Status)
                                 {
-                                    <span class="badge bg-success px-3 py-2">
+                                    case AcademicStatus.Approved:
 
-                                        Approved
+                                        <span class="badge bg-success px-3 py-2">
+                                            Approved
+                                        </span>
 
-                                    </span>
-                                }
-                                else
-                                {
-                                    <span class="badge bg-danger px-3 py-2">
+                                        break;
 
-                                        Failed
+                                    case AcademicStatus.Recovery:
 
-                                    </span>
+                                        <span class="badge bg-warning text-dark px-3 py-2">
+                                            Recovery
+                                        </span>
+
+                                        break;
+
+                                    case AcademicStatus.FailedByAttendance:
+
+                                        <span class="badge bg-danger px-3 py-2">
+                                            Failed Attendance
+                                        </span>
+
+                                        break;
+
+                                    case AcademicStatus.FailedByGrade:
+
+                                        <span class="badge bg-danger px-3 py-2">
+                                            Failed Grade
+                                        </span>
+
+                                        break;
+
+                                    default:
+
+                                        <span class="badge bg-secondary px-3 py-2">
+                                            In Progress
+                                        </span>
+
+                                        break;
                                 }
 
                             </td>
 
                             <!-- BIMESTER -->
                             <td class="text-center">
-
                                 @item.Bimester º
-
                             </td>
 
                             <!-- YEAR -->
                             <td class="text-center">
-
                                 @item.SchoolYear
-
                             </td>
 
                             <!-- ACTIONS -->
@@ -373,7 +382,7 @@
                    asp-route-Search="@Model.Search"
                    asp-route-MinGrade="@Model.MinGrade"
                    asp-route-MaxGrade="@Model.MaxGrade"
-                   asp-route-Approved="@Model.Approved">
+                   asp-route-Approved="@Model.Status">
 
                     Previous
 
@@ -392,7 +401,7 @@
                        asp-route-Search="@Model.Search"
                        asp-route-MinGrade="@Model.MinGrade"
                        asp-route-MaxGrade="@Model.MaxGrade"
-                       asp-route-Approved="@Model.Approved">
+                       asp-route-Approved="@Model.Status">
 
                         @i
 
@@ -412,7 +421,7 @@
                    asp-route-Search="@Model.Search"
                    asp-route-MinGrade="@Model.MinGrade"
                    asp-route-MaxGrade="@Model.MaxGrade"
-                   asp-route-Approved="@Model.Approved">
+                   asp-route-Approved="@Model.Status">
 
                     Next
 

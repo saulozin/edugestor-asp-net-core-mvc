@@ -18,12 +18,17 @@ namespace EduGestor.Services
         public async Task<DashboardViewModel> GetDashboardDataAsync()
         {
             var registrations =
-    await _context.Registrations
-        .Include(r => r.Grades)
-        .ToListAsync();
+                await _context.Registrations
+                    .Include(r => r.Grades)
+                    .Include(r => r.Attendances)
+                    .ToListAsync();
 
             var grades =
                 await _context.Grades
+                    .ToListAsync();
+
+            var attendances =
+                await _context.Attendances
                     .ToListAsync();
 
             var schoolAverage =
@@ -31,10 +36,20 @@ namespace EduGestor.Services
                     ? grades.Average(g => g.StudentGrade)
                     : 0;
 
-            var averageFrequency =
-                grades.Any()
-                    ? grades.Average(g => g.Frequency)
-                    : 0;
+            decimal averageFrequency = 0;
+
+            if (attendances.Any())
+            {
+                var totalClasses =
+                    attendances.Count;
+
+                var presents =
+                    attendances.Count(a => a.Present);
+
+                averageFrequency =
+                    Math.Round(
+                        ((decimal)presents / totalClasses) * 100, 2);
+            }
 
             var approvedStudents =
                 registrations.Count(r =>
@@ -80,7 +95,7 @@ namespace EduGestor.Services
 
                 RecentRegistrations = await _context.Registrations
                     .Include(r => r.Student)
-                        .ThenInclude(s => s.Guardian)
+                        .ThenInclude(s => s!.Guardian)
                     .Include(r => r.StudentClass)
                     .OrderByDescending(r => r.CreatedAt)
                     .Take(5)

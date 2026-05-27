@@ -1,4 +1,6 @@
-﻿namespace EduGestor.Models.ViewModels
+﻿using EduGestor.Models.Enums;
+
+namespace EduGestor.Models.ViewModels
 {
     public class TeacherStudentRowViewModel
     {
@@ -10,6 +12,6 @@
 
         public decimal Frequency { get; set; }
 
-        public bool Approved { get; set; }
+        public AcademicStatus Status { get; set; }
     }
 }

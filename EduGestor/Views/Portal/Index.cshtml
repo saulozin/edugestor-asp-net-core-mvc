@@ -1,5 +1,6 @@
 ﻿@model EduGestor.Models.ViewModels.Portal.PortalViewModel
 @using System.Globalization
+@using EduGestor.Models.Enums
 
 @{
     ViewData["Title"] = "Guardian Portal";
@@ -120,7 +121,7 @@
 
                     @{
                         var approved =
-                            student.Grades.All(g => g.Approved);
+                            student.Grades.All(g => g.Status == AcademicStatus.Approved);
                     }
 
                     <div class="card border-0 rounded-4
@@ -138,7 +139,7 @@
 
                                 @(approved
                                     ? "Approved"
-                                    : "Attention")
+                                    : "Academic Attention")
 
                             </h4>
 
@@ -205,17 +206,37 @@
 
                                 <td>
 
-                                    @if (grade.Approved)
+                                    @switch (grade.Status)
                                     {
-                                        <span class="badge bg-success">
-                                            Approved
-                                        </span>
-                                    }
-                                    else
-                                    {
-                                        <span class="badge bg-danger">
-                                            Failed
-                                        </span>
+                                        case AcademicStatus.Approved:
+                                            <span class="badge bg-success">
+                                                Approved
+                                            </span>
+                                            break;
+
+                                        case AcademicStatus.Recovery:
+                                            <span class="badge bg-warning text-dark">
+                                                Recovery
+                                            </span>
+                                            break;
+
+                                        case AcademicStatus.FailedByAttendance:
+                                            <span class="badge bg-danger">
+                                                Failed Attendance
+                                            </span>
+                                            break;
+
+                                        case AcademicStatus.FailedByGrade:
+                                            <span class="badge bg-danger">
+                                                Failed Grade
+                                            </span>
+                                            break;
+
+                                        default:
+                                            <span class="badge bg-secondary">
+                                                In Progress
+                                            </span>
+                                            break;
                                     }
 
                                 </td>

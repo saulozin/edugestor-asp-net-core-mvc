@@ -10,6 +10,8 @@
         public string ClassCode { get; set; }
             = string.Empty;
 
+        public int Bimester { get; set; }
+
         public DateOnly Date { get; set; } = DateOnly.FromDateTime(DateTime.Today);
 
         public List<AttendanceLaunchRowViewModel> Students { get; set; } = new();
