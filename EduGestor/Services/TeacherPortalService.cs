@@ -318,10 +318,6 @@ namespace EduGestor.Services
                         Grade =
                             existingGrade?.StudentGrade
                             ?? 0,
-
-                        Frequency =
-                            existingGrade?.Frequency
-                            ?? 0
                     });
             }
 
@@ -335,19 +331,13 @@ namespace EduGestor.Services
                 var existingGrade =
                     await _context.Grades
                         .FirstOrDefaultAsync(g =>
+                            g.RegistrationId == student.RegistrationId &&
+                            g.DisciplineClassId == vm.DisciplineClassId &&
+                            g.Bimester == vm.Bimester);
 
-                            g.RegistrationId ==
-                                student.RegistrationId
-
-                            &&
-
-                            g.DisciplineClassId ==
-                                vm.DisciplineClassId
-
-                            &&
-
-                            g.Bimester ==
-                                vm.Bimester);
+                var frequency =
+                    await CalculateFrequencyAsync(
+                        student.RegistrationId, vm.DisciplineClassId);
 
                 // =========================================
                 // UPDATE
@@ -355,11 +345,11 @@ namespace EduGestor.Services
 
                 if (existingGrade != null)
                 {
-                    existingGrade.StudentGrade =
-                        student.Grade;
+                    existingGrade.StudentGrade = student.Grade;
 
-                    existingGrade.Frequency =
-                        student.Frequency;
+                    existingGrade.Frequency = frequency;
+
+                    existingGrade.UpdatedAt = DateTime.UtcNow;
 
                     continue;
                 }
@@ -371,26 +361,152 @@ namespace EduGestor.Services
                 var grade =
                     new Grade
                     {
-                        RegistrationId =
-                            student.RegistrationId,
+                        RegistrationId = student.RegistrationId,
 
-                        DisciplineClassId =
-                            vm.DisciplineClassId,
+                        DisciplineClassId = vm.DisciplineClassId,
 
-                        StudentGrade =
-                            student.Grade,
+                        StudentGrade = student.Grade,
 
-                        Frequency =
-                            student.Frequency,
+                        Frequency = frequency,
 
-                        Bimester =
-                            vm.Bimester
+                        Bimester = vm.Bimester
                     };
 
                 _context.Grades.Add(grade);
             }
 
             await _context.SaveChangesAsync();
+        }
+
+        // =========================
+        // Attendance
+        // =========================
+        public async Task<AttendanceLaunchViewModel?> GetLaunchAttendanceDataAsync(
+            Guid disciplineClassId, DateOnly date)
+        {
+            var disciplineClass = await _context.DisciplineClasses
+                .Include(dc => dc.Discipline)
+                .Include(dc => dc.StudentClass)
+                    .ThenInclude(sc => sc!.Registrations)
+                        .ThenInclude(r => r.Student)
+                .Include(dc => dc.Attendances)
+                .FirstOrDefaultAsync(dc => dc.Id == disciplineClassId);
+
+            if (disciplineClass == null)
+            {
+                return null;
+            }
+
+            var vm =
+                new AttendanceLaunchViewModel
+                {
+                    DisciplineClassId = disciplineClass.Id,
+
+                    Discipline = disciplineClass.Discipline?.Name ?? "-",
+
+                    ClassCode = disciplineClass.StudentClass?.Code ?? "-",
+
+                    Date = date
+                };
+
+            var registrations = 
+                disciplineClass
+                    .StudentClass?
+                    .Registrations?
+                    .ToList()
+
+                ?? new List<Registration>();
+
+            foreach (var registration in registrations)
+            {
+                var existingAttendance = disciplineClass.Attendances
+                    .FirstOrDefault(a =>
+                        a.RegistrationId == registration.Id &&
+                        a.Date == date);
+
+                vm.Students.Add(
+                    new AttendanceLaunchRowViewModel
+                    {
+                        RegistrationId = registration.Id,
+
+                        StudentName = registration.Student?.Name ?? "-",
+
+                        Present = existingAttendance?.Present ?? true
+                    });
+            }
+
+            return vm;
+        }
+
+        public async Task SaveLaunchAttendanceAsync(AttendanceLaunchViewModel vm)
+        {
+            foreach (var student in vm.Students)
+            {
+                var existingAttendance = await _context.Attendances
+                    .FirstOrDefaultAsync(a =>
+                        a.RegistrationId == student.RegistrationId &&
+                        a.DisciplineClassId == vm.DisciplineClassId &&
+                        a.Date == vm.Date);
+
+                // =========================
+                // UPDATE
+                // =========================
+
+                if (existingAttendance != null)
+                {
+                    existingAttendance.Present = student.Present;
+                    existingAttendance.UpdatedAt = DateTime.UtcNow;
+
+                    continue;
+                }
+
+                // =========================
+                // CREATE
+                // =========================
+
+                var attendance =
+                    new Attendance
+                    {
+                        RegistrationId = student.RegistrationId,
+
+                        DisciplineClassId = vm.DisciplineClassId,
+
+                        Date = vm.Date,
+
+                        Present = student.Present
+                    };
+
+                _context.Attendances.Add(attendance);
+            }
+
+            await _context.SaveChangesAsync();
+        }
+
+        private async Task<decimal> CalculateFrequencyAsync(Guid registrationId, Guid disciplineClassId)
+        {
+            var attendances =
+                await _context.Attendances
+                    .Where(a =>
+                        a.RegistrationId == registrationId
+                        &&
+                        a.DisciplineClassId == disciplineClassId)
+                    .ToListAsync();
+
+            if (!attendances.Any())
+            {
+                return 0;
+            }
+
+            var totalClasses =
+                attendances.Count;
+
+            var presents =
+                attendances.Count(a => a.Present);
+
+            return
+                Math.Round(
+                    ((decimal)presents / totalClasses) * 100,
+                    2);
         }
 
     }

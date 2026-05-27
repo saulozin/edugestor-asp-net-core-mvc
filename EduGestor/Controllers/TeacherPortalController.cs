@@ -97,8 +97,46 @@ namespace EduGestor.Controllers
                 return View(vm);
             }
 
-            await _teacherPortalService
-                .SaveLaunchGradesAsync(vm);
+            await _teacherPortalService.SaveLaunchGradesAsync(vm);
+
+            return RedirectToAction(
+                nameof(Details),
+                new
+                {
+                    disciplineClassId = vm.DisciplineClassId
+                });
+        }
+
+        // ===========================
+        // Attendance
+        // ===========================
+        public async Task<IActionResult> LaunchAttendance(
+            Guid disciplineClassId, DateOnly? date)
+        {
+            var vm =
+                await _teacherPortalService
+                    .GetLaunchAttendanceDataAsync(
+                        disciplineClassId,
+                        date ?? DateOnly.FromDateTime(DateTime.Today));
+
+            if (vm == null)
+            {
+                throw new NotFoundException("Class not found.");
+            }
+
+            return View(vm);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> LaunchAttendance(AttendanceLaunchViewModel vm)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(vm);
+            }
+
+            await _teacherPortalService.SaveLaunchAttendanceAsync(vm);
 
             return RedirectToAction(
                 nameof(Details),

@@ -1,0 +1,170 @@
+﻿@model EduGestor.Models.ViewModels.AttendanceLaunchViewModel
+
+@{
+    ViewData["Title"] = "Launch Attendance";
+}
+
+<div class="container-fluid">
+
+    <!-- HEADER -->
+    <div class="mb-4">
+
+        <h2 class="fw-bold">
+            Launch Attendance
+        </h2>
+
+        <div class="text-muted">
+
+            Discipline:
+            <strong>
+                @Model.Discipline
+            </strong>
+
+            |
+
+            Class:
+            <strong>
+                @Model.ClassCode
+            </strong>
+
+        </div>
+
+    </div>
+
+    <!-- FORM -->
+    <form asp-action="LaunchAttendance"
+          method="post">
+
+        @Html.AntiForgeryToken()
+
+        <!-- HIDDEN -->
+        <input type="hidden"
+               asp-for="DisciplineClassId" />
+
+        <!-- CARD -->
+        <div class="card border-0 shadow-sm rounded-4">
+
+            <div class="card-body p-4">
+
+                <!-- DATE -->
+                <div class="row mb-4">
+
+                    <div class="col-md-4">
+
+                        <label asp-for="Date"
+                               class="form-label fw-semibold">
+
+                            Attendance Date
+
+                        </label>
+
+                        <input asp-for="Date"
+                               type="date"
+                               class="form-control rounded-3" />
+
+                    </div>
+
+                </div>
+
+                <!-- TABLE -->
+                <div class="table-responsive">
+
+                    <table class="table align-middle table-hover">
+
+                        <thead class="table-light">
+
+                            <tr>
+
+                                <th>
+                                    Student
+                                </th>
+
+                                <th width="200">
+                                    Attendance
+                                </th>
+
+                            </tr>
+
+                        </thead>
+
+                        <tbody>
+
+                            @for (int i = 0; i < Model.Students.Count; i++)
+                            {
+                                <tr>
+
+                                    <!-- HIDDEN FIELDS -->
+                                    <input type="hidden"
+                                           asp-for="Students[i].RegistrationId" />
+
+                                    <input type="hidden"
+                                           asp-for="Students[i].StudentName" />
+
+                                    <!-- STUDENT -->
+                                    <td>
+
+                                        <strong>
+                                            @Model.Students.ElementAt(i).StudentName
+                                        </strong>
+
+                                    </td>
+
+                                    <!-- PRESENT -->
+                                    <td>
+
+                                        <div class="form-check form-switch">
+
+                                            <input asp-for="Students[i].Present"
+                                                   class="form-check-input"
+                                                   type="checkbox" />
+
+                                            <label class="form-check-label">
+
+                                                Present
+
+                                            </label>
+
+                                        </div>
+
+                                    </td>
+
+                                </tr>
+                            }
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+                <!-- ACTIONS -->
+                <div class="d-flex justify-content-end mt-4 gap-2">
+
+                    <!-- BACK -->
+                    <a asp-action="Details"
+                       asp-route-disciplineClassId="@Model.DisciplineClassId"
+                       class="btn btn-outline-secondary rounded-3">
+
+                        <i class="bi bi-arrow-left"></i>
+                        Back
+
+                    </a>
+
+                    <!-- SAVE -->
+                    <button type="submit" class="btn btn-success rounded-3">
+
+                        <i class="bi bi-check-circle"></i>
+
+                        Save Attendance
+
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </form>
+
+</div>

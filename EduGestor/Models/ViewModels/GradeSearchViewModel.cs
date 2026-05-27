@@ -17,11 +17,12 @@
 
         // Acadêmico
         public int? Bimester { get; set; }
+
         public int? SchoolYear { get; set; }
 
         public int PageNumber { get; set; } = 1;
 
-        public int PageSize { get; set; } = 8;
+        public int PageSize { get; set; } = 16;
 
         public int TotalPages { get; set; }
 

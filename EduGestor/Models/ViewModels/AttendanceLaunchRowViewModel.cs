@@ -1,12 +1,13 @@
 ﻿namespace EduGestor.Models.ViewModels
 {
-    public class GradeLaunchRowViewModel
+    public class AttendanceLaunchRowViewModel
     {
         public Guid RegistrationId { get; set; }
 
         public string StudentName { get; set; } = string.Empty;
 
-        public decimal Grade { get; set; }
+        public bool Present { get; set; } = true;
 
+        public string? Observation { get; set; }
     }
 }

@@ -20,6 +20,7 @@ namespace EduGestor.Data
         public DbSet<Registration> Registrations { get; set; } = default!;   //Matricula
         public DbSet<Grade> Grades { get; set; } = default!;   //Nota
         public DbSet<DisciplineClass> DisciplineClasses { get; set; } = default!;   //Disciplina Turma
+        public DbSet<Attendance> Attendances { get; set; } = default!; // Presença dos alunos
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -103,6 +104,21 @@ namespace EduGestor.Data
             modelBuilder.Entity<Guardian>()
                 .HasIndex(g => g.Cpf)
                 .IsUnique();
+
+            // ==========================
+            // Attendance
+            // ==========================
+            modelBuilder.Entity<Attendance>()
+                .HasOne(a => a.Registration)
+                .WithMany(r => r.Attendances)
+                .HasForeignKey(a => a.RegistrationId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Attendance>()
+                .HasOne(a => a.DisciplineClass)
+                .WithMany(dc => dc.Attendances)
+                .HasForeignKey(a => a.DisciplineClassId)
+                .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }

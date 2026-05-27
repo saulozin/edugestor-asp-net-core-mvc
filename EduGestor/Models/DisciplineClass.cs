@@ -22,6 +22,8 @@ namespace EduGestor.Models
 
         public ICollection<Grade> Grades { get; set; } = new List<Grade>();
 
+        public List<Attendance> Attendances { get; set; } = new List<Attendance>();
+
         public DisciplineClass()
         {
         }

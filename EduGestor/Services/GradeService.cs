@@ -21,20 +21,20 @@ namespace EduGestor.Services
 
                 // REGISTRATION
                 .Include(g => g.Registration)
-                    .ThenInclude(r => r.Student)
+                    .ThenInclude(r => r!.Student)
 
                 .Include(g => g.Registration)
-                    .ThenInclude(r => r.StudentClass)
+                    .ThenInclude(r => r!.StudentClass)
 
                 // DISCIPLINE CLASS
                 .Include(g => g.DisciplineClass)
-                    .ThenInclude(dc => dc.Discipline)
+                    .ThenInclude(dc => dc!.Discipline)
 
                 .Include(g => g.DisciplineClass)
-                    .ThenInclude(dc => dc.Teacher)
+                    .ThenInclude(dc => dc!.Teacher)
 
                 .Include(g => g.DisciplineClass)
-                    .ThenInclude(dc => dc.StudentClass)
+                    .ThenInclude(dc => dc!.StudentClass)
 
                 .OrderByDescending(g => g.CreatedAt)
 
@@ -159,16 +159,16 @@ namespace EduGestor.Services
             return await _context.Grades
 
                 .Include(g => g.Registration)
-                    .ThenInclude(r => r.Student)
+                    .ThenInclude(r => r!.Student)
 
                 .Include(g => g.Registration)
-                    .ThenInclude(r => r.StudentClass)
+                    .ThenInclude(r => r!.StudentClass)
 
                 .Include(g => g.DisciplineClass)
-                    .ThenInclude(dc => dc.Discipline)
+                    .ThenInclude(dc => dc!.Discipline)
 
                 .Include(g => g.DisciplineClass)
-                    .ThenInclude(dc => dc.Teacher)
+                    .ThenInclude(dc => dc!.Teacher)
 
                 .FirstOrDefaultAsync(g => g.Id == id);
         }
@@ -194,6 +194,34 @@ namespace EduGestor.Services
             }
         }
 
+        private async Task<decimal> CalculateFrequencyAsync(
+    Guid registrationId,
+    Guid disciplineClassId)
+        {
+            var attendances =
+                await _context.Attendances
+                    .Where(a =>
+                        a.RegistrationId == registrationId
+                        &&
+                        a.DisciplineClassId == disciplineClassId)
+                    .ToListAsync();
+
+            if (!attendances.Any())
+            {
+                return 0;
+            }
+
+            var totalClasses =
+                attendances.Count;
+
+            var presents =
+                attendances.Count(a => a.Present);
+
+            return Math.Round(
+                ((decimal)presents / totalClasses) * 100,
+                2);
+        }
+
         // ========================
         // CREATE
         // ========================
@@ -211,12 +239,30 @@ namespace EduGestor.Services
                     "A grade already exists for this bimester and discipline.");
             }
 
-            await ValidateGradeRules(grade);
+            try
+            {
+                await ValidateGradeRules(grade);
 
-            grade.CreatedAt = DateTime.UtcNow;
+                if (grade.RegistrationId == null ||
+                    grade.DisciplineClassId == null)
+                {
+                    throw new IntegrityException("Invalid grade data.");
+                }
 
-            _context.Grades.Add(grade);
-            await _context.SaveChangesAsync();
+                grade.Frequency =
+                    await CalculateFrequencyAsync(
+                        grade.RegistrationId.Value,
+                        grade.DisciplineClassId.Value);
+
+                grade.CreatedAt = DateTime.UtcNow;
+
+                _context.Grades.Add(grade);
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException err)
+            {
+                throw new DbConcurrencyException(err.Message);
+            }
         }
 
         // ========================
@@ -246,10 +292,21 @@ namespace EduGestor.Services
                     "A grade already exists for this bimester and discipline.");
             }
 
-            await ValidateGradeRules(grade);
-
             try
             {
+                await ValidateGradeRules(grade);
+
+                if (grade.RegistrationId == null ||
+                    grade.DisciplineClassId == null)
+                {
+                    throw new IntegrityException("Invalid grade data.");
+                }
+
+                grade.Frequency =
+                    await CalculateFrequencyAsync(
+                        grade.RegistrationId.Value,
+                        grade.DisciplineClassId.Value);
+
                 grade.UpdatedAt = DateTime.UtcNow;
 
                 _context.Grades.Update(grade);
@@ -258,8 +315,7 @@ namespace EduGestor.Services
             }
             catch (DbUpdateConcurrencyException err)
             {
-                throw new DbConcurrencyException(
-                    err.Message);
+                throw new DbConcurrencyException( err.Message);
             }
         }
 
