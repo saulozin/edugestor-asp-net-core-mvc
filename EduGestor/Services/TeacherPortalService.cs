@@ -1,5 +1,6 @@
 ﻿using EduGestor.Data;
 using EduGestor.Models;
+using EduGestor.Models.Enums;
 using EduGestor.Models.ViewModels;
 using EduGestor.ViewModels;
 using Microsoft.EntityFrameworkCore;
@@ -196,7 +197,13 @@ namespace EduGestor.Services
             return vm;
         }
 
-        public async Task<TeacherClassDetailsViewModel?> GetClassDetailsAsync(Guid disciplineClassId)
+        public async Task<TeacherClassDetailsViewModel?> GetClassDetailsAsync(
+            Guid disciplineClassId,
+            string? search = null,
+            decimal? maxFrequency = null,
+            AcademicStatus? statusFilter = null,
+            string? sortBy = null,
+            bool descending = false)
         {
             var disciplineClass =
                 await _context.DisciplineClasses
@@ -282,6 +289,57 @@ namespace EduGestor.Services
 
                     });
             }
+
+            // ===================
+            // Search
+            // ===================
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                vm.Students = vm.Students
+                    .Where(s =>
+                        s.StudentName.Contains(search, StringComparison.OrdinalIgnoreCase))
+                    .ToList();
+            }
+
+            if (maxFrequency.HasValue)
+            {
+                vm.Students = vm.Students
+                    .Where(s => s.Frequency <= maxFrequency.Value)
+                    .ToList();
+            }
+
+            if (statusFilter.HasValue)
+            {
+                vm.Students = vm.Students
+                    .Where(s => s.Status == statusFilter.Value)
+                    .ToList();
+            }
+
+            // ===================
+            // ORDERNATION
+            // ===================
+            vm.Students = sortBy switch
+            {
+                "name" => descending
+                    ? vm.Students.OrderByDescending(s => s.StudentName).ToList()
+                    : vm.Students.OrderBy(s => s.StudentName).ToList(),
+
+                "grade" => descending
+                    ? vm.Students.OrderByDescending(s => s.AverageGrade).ToList()
+                    : vm.Students.OrderBy(s => s.AverageGrade).ToList(),
+
+                "frequency" => descending
+                    ? vm.Students.OrderByDescending(s => s.Frequency).ToList()
+                    : vm.Students.OrderBy(s => s.Frequency).ToList(),
+
+                "status" => descending
+                    ? vm.Students.OrderByDescending(s => s.Status).ToList()
+                    : vm.Students.OrderBy(s => s.Status).ToList(),
+
+                _ => vm.Students
+            };
+
+            // ===================
 
             return vm;
         }
@@ -541,6 +599,52 @@ namespace EduGestor.Services
                 Math.Round(
                     ((decimal)presents / totalClasses) * 100,
                     2);
+        }
+
+        public async Task<AttendanceHistoryViewModel?> GetAttendanceHistoryAsync(Guid disciplineClassId)
+        {
+            var disciplineClass =
+                await _context.DisciplineClasses
+                    .Include(dc => dc.Discipline)
+                    .Include(dc => dc.StudentClass)
+                    .Include(dc => dc.Attendances)
+                        .ThenInclude(a => a.Registration)
+                            .ThenInclude(r => r.Student)
+
+                    .FirstOrDefaultAsync(dc => dc.Id == disciplineClassId);
+
+            if (disciplineClass == null)
+            {
+                return null;
+            }
+
+            var vm =
+                new AttendanceHistoryViewModel
+                {
+                    DisciplineClassId = disciplineClass.Id,
+
+                    Discipline = disciplineClass.Discipline?.Name ?? "-",
+
+                    ClassCode = disciplineClass.StudentClass?.Code ?? "-"
+                };
+
+            vm.Attendances =
+                disciplineClass.Attendances
+                    .OrderByDescending(a => a.Date)
+                    .ThenBy(a => a.Registration!.Student!.Name)
+
+                    .Select(a =>
+                        new AttendanceHistoryRowViewModel
+                        {
+                            StudentName = a.Registration!.Student!.Name,
+
+                            Date = a.Date,
+
+                            Present = a.Present
+                        })
+                    .ToList();
+
+            return vm;
         }
 
     }

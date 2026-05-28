@@ -1,0 +1,103 @@
+﻿@model EduGestor.Models.ViewModels.AttendanceHistoryViewModel
+
+@{
+    ViewData["Title"] = "Attendance History";
+}
+
+<div class="card shadow-sm border-0 rounded-4">
+
+    <div class="card-body">
+
+        <div class="d-flex justify-content-between align-items-center mb-4">
+
+            <div>
+                <h3 class="fw-bold mb-1">
+                    Attendance History
+                </h3>
+
+                <p class="text-muted mb-4">
+                    @Model.Discipline - @Model.ClassCode
+                </p>
+            </div>
+
+            <a asp-action="Details"
+               asp-route-disciplineClassId="@Model.DisciplineClassId"
+               class="btn btn-secondary">
+                Back
+            </a>
+
+        </div>    
+
+        <div class="table-responsive">
+
+            <table class="table table-hover align-middle">
+
+                <thead class="table-light">
+
+                    <tr>
+                        <th>Student</th>
+
+                        <th>Date</th>
+
+                        <th>Status</th>
+                    </tr>
+
+                </thead>
+
+                <tbody>
+
+                    @if (!Model.Attendances.Any())
+                    {
+                        <tr>
+
+                            <td colspan="3"
+                                class="text-center text-muted py-4">
+
+                                No attendance records found.
+
+                            </td>
+
+                        </tr>
+                    }
+
+                    @foreach (var item in Model.Attendances)
+                    {
+                        <tr>
+
+                            <td>
+                                @item.StudentName
+                            </td>
+
+                            <td>
+                                @item.Date.ToString("dd/MM/yyyy")
+                            </td>
+
+                            <td>
+
+                                @if (item.Present)
+                                {
+                                    <span class="badge bg-success">
+                                        Present
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-danger">
+                                        Absent
+                                    </span>
+                                }
+
+                            </td>
+
+                        </tr>
+                    }
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+</div>

@@ -1,8 +1,14 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace EduGestor.Models
 {
+    [Index(
+    nameof(RegistrationId),
+    nameof(DisciplineClassId),
+    nameof(Date),
+    IsUnique = true)]
     public class Attendance
     {
         [Key]

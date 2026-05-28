@@ -1,8 +1,10 @@
-﻿using EduGestor.Models.ViewModels;
+﻿using EduGestor.Models.Enums;
+using EduGestor.Models.ViewModels;
 using EduGestor.Services;
 using EduGestor.Services.Exceptions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Diagnostics;
 
 namespace EduGestor.Controllers
 {
@@ -46,11 +48,23 @@ namespace EduGestor.Controllers
         // =========================================
         // VIEW CLASS
         // =========================================
-        public async Task<IActionResult> Details(Guid disciplineClassId)
+        public async Task<IActionResult> Details(
+            Guid disciplineClassId,
+            string? search,
+            decimal? maxFrequency,
+            AcademicStatus? statusFilter,
+            string? sortBy,
+            bool descending = false)
         {
             var vm =
                 await _teacherPortalService
-                    .GetClassDetailsAsync(disciplineClassId);
+                    .GetClassDetailsAsync(
+                        disciplineClassId,
+                        search,
+                        maxFrequency,
+                        statusFilter,
+                        sortBy,
+                        descending);
 
             if (vm == null)
             {
@@ -110,8 +124,7 @@ namespace EduGestor.Controllers
         // ===========================
         // Attendance
         // ===========================
-        public async Task<IActionResult> LaunchAttendance(
-            Guid disciplineClassId, DateOnly? date)
+        public async Task<IActionResult> LaunchAttendance(Guid disciplineClassId, DateOnly? date)
         {
             var vm =
                 await _teacherPortalService
@@ -144,6 +157,36 @@ namespace EduGestor.Controllers
                 {
                     disciplineClassId = vm.DisciplineClassId
                 });
+        }
+
+        // =======================
+        // Attendance History
+        // =======================
+        public async Task<IActionResult> AttendanceHistory(Guid disciplineClassId)
+        {
+            var vm =
+                await _teacherPortalService.GetAttendanceHistoryAsync(disciplineClassId);
+
+            if (vm == null)
+            {
+                throw new NotFoundException("Id not found.");
+            }
+
+            return View(vm);
+        }
+
+        // ===================
+        // Errors
+        // ===================
+        public IActionResult Error(string message)
+        {
+            var viewModel = new ErrorViewModel
+            {
+                Message = message,
+                RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier
+            };
+
+            return View(viewModel);
         }
     }
 }
